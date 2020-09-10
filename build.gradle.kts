@@ -3,7 +3,6 @@ plugins {
 }
 group = "me.michael.depies"
 version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }
@@ -36,7 +35,7 @@ kotlin {
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
-    
+
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
@@ -61,3 +60,5 @@ kotlin {
         val nativeTest by getting
     }
 }
+
+val artifactID = "251fc876e074238ffd14be52c55c251b7b973ef3"

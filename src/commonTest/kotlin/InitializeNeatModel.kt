@@ -2,24 +2,25 @@ import kotlin.random.*
 
 fun initializeNeatModel(random: Random): NeatMutator {
     return neatMutator(1, 1, random).apply {
-        val node = newNode()
-        val node2 = newNode()
+        val node = newNode(Identity, 3)
+        val node2 = newNode(Identity, 4)
         addNode(node)
         addNode(node2)
+        val nodeSource = inputNodes.first()
         addConnection(
             connectNodes(
-                inputNodes.first(),
+                nodeSource,
                 node,
                 randomWeight(random),
-                connections.last().innovation + 1
+                2
             )
         )
         addConnection(
             connectNodes(
-                inputNodes.first(),
+                nodeSource,
                 node2,
                 randomWeight(random),
-                connections.last().innovation + 1
+                3
             )
         )
         addConnection(
@@ -27,7 +28,7 @@ fun initializeNeatModel(random: Random): NeatMutator {
                 node,
                 outputNodes.last(),
                 randomWeight(random),
-                connections.last().innovation + 1
+                4
             )
         )
         addConnection(
@@ -35,7 +36,7 @@ fun initializeNeatModel(random: Random): NeatMutator {
                 node2,
                 outputNodes.last(),
                 randomWeight(random),
-                connections.last().innovation + 1
+                5
             )
         )
 

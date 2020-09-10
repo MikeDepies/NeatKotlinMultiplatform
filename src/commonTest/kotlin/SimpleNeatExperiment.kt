@@ -1,6 +1,10 @@
 import kotlin.random.*
 
-fun simpleNeatExperiment(random: Random, innovation: Int): NeatExperiment {
+fun simpleNeatExperiment(
+    random: Random,
+    innovation: Int,
+    activationFunctions: List<ActivationFunction>
+): NeatExperiment {
     return object : NeatExperiment {
 
         private val excessWeight = 1f
@@ -11,17 +15,13 @@ fun simpleNeatExperiment(random: Random, innovation: Int): NeatExperiment {
         override val random: Random get() = random
 
         override fun mutateAddConnection(neatMutator: NeatMutator) {
-            val randomSourceNode = neatMutator.nodes.random(random)
-            val poolOfTargetNodes = neatMutator.nodes.filterNot {
-                (it.nodeType == NodeType.Input || it.nodeType == NodeType.Output)
-                        && it.nodeType == randomSourceNode.nodeType
-            }
-            val randomTargetNode = poolOfTargetNodes.random(random)
+            val (sourceNode, targetNode) = neatMutator.connectableNodes.random(random)
             neatMutator.addConnection(
-                connectNodes(
-                    randomSourceNode,
-                    randomTargetNode,
+                ConnectionGene(
+                    sourceNode,
+                    targetNode,
                     randomWeight(random),
+                    true,
                     nextInnovation()
                 )
             )
@@ -29,7 +29,7 @@ fun simpleNeatExperiment(random: Random, innovation: Int): NeatExperiment {
 
         override fun mutateAddNode(neatMutator: NeatMutator) {
             val randomConnection = neatMutator.connections.random(random)
-            val node = NodeGene(neatMutator.lastNode.node + 1, NodeType.Hidden,)
+            val node = NodeGene(neatMutator.lastNode.node + 1, NodeType.Hidden, activationFunctions.random(random))
             val copiedConnection = randomConnection.copy(innovation = nextInnovation(), inNode = node.node)
             val newEmptyConnection = ConnectionGene(randomConnection.inNode, node.node, 1f, true, nextInnovation())
             randomConnection.enabled = false

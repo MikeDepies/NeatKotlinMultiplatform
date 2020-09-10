@@ -38,10 +38,12 @@ class NeatTest {
     }
 
     @Test
-    fun `Add connection to neat mutator`() {
+    fun `Add connection between two nodes already connected to neat mutator`() {
         val neat: NeatMutator = neatMutator(4, 2)
-        val connectionGene = ConnectionGene(neat.inputNodes.first().node, neat.hiddenNodes.first().node, 1f, true, 1)
-        neat.apply {
+
+        val connectionGene = ConnectionGene(neat.inputNodes.first().node, neat.outputNodes.first().node, 1f, true, 1)
+
+        assertFails {
             neat.addConnection(connectionGene)
         }
         //new single connection gene added connecting two previously unconnected ndoes.
@@ -52,7 +54,7 @@ class NeatTest {
         val neatMutator = neatMutator(4, 2)
         assertEquals(4, neatMutator.inputNodes.size)
         assertEquals(2, neatMutator.outputNodes.size)
-        assertEquals(1, neatMutator.hiddenNodes.size)
+        assertEquals(0, neatMutator.hiddenNodes.size)
     }
 
     @Test
@@ -61,14 +63,12 @@ class NeatTest {
         //assert input to hidden connections
         //assert hidden to output connections
 
-        val connectionsToHiddenNode = neatMutator.connectionsTo(neatMutator.hiddenNodes.first())
-        val connectionsFromHiddenNode = neatMutator.connectionsFrom(neatMutator.hiddenNodes.first())
-        println(connectionsFromHiddenNode)
-        println(connectionsToHiddenNode)
-        assertEquals(4, connectionsToHiddenNode.size)
-        assertEquals(2, connectionsFromHiddenNode.size)
-        assertTrue(connectionsFromHiddenNode.all { it.enabled })
-        assertTrue(connectionsToHiddenNode.all { it.enabled })
+        val connectionsToOutputNode1 = neatMutator.connectionsTo(neatMutator.outputNodes[0])
+        val connectionsToOutputNode2 = neatMutator.connectionsTo(neatMutator.outputNodes[1])
+        assertEquals(4, connectionsToOutputNode1.size)
+        assertEquals(4, connectionsToOutputNode2.size)
+        assertTrue(connectionsToOutputNode2.all { it.enabled })
+        assertTrue(connectionsToOutputNode1.all { it.enabled })
     }
 
     @Test
@@ -76,7 +76,7 @@ class NeatTest {
         val neatMutator = neatMutator(2, 2)
         neatMutator.apply {
             val nodeId = lastNode.node + 1
-            val node = NodeGene(nodeId, NodeType.Hidden,)
+            val node = NodeGene(nodeId, NodeType.Hidden, Identity)
             addNode(node)
             assertTrue(neatMutator.connectionsFrom(node).isEmpty())
             assertTrue(neatMutator.connectionsTo(node).isEmpty())

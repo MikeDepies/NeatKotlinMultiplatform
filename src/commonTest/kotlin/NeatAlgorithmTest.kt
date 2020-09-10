@@ -5,6 +5,8 @@ import kotlin.test.*
 
 data class CompatibilityDistanceData(val E: Int, val N: Int, val D: Int, val W: Float)
 
+
+private val avctivationFunctions = listOf(Identity)
 class NeatAlgorithmTest {
 
     @Test
@@ -12,9 +14,10 @@ class NeatAlgorithmTest {
         val random = mockk<Random>()
         every { random.nextFloat() } returns 1f
         every { random.nextInt(8) } returnsMany listOf(0)
+        every { random.nextInt(any()) } returns 0
         val neatMutator = neatMutator(4, 2, random)
         val innovation = lastInnovation(neatMutator) + 1
-        val experiment = simpleNeatExperiment(random, innovation)
+        val experiment = simpleNeatExperiment(random, innovation, avctivationFunctions)
         val expectedSize = 1
         experiment.mutateAddNode(neatMutator)
         val newNode = neatMutator.lastNode
@@ -30,7 +33,7 @@ class NeatAlgorithmTest {
         val neatMutator = initializeNeatModel(random)
         val expectedNumberOfConnections = 6
         val innovation = lastInnovation(neatMutator) + 1
-        val experiment = simpleNeatExperiment(random, innovation = innovation)
+        val experiment = simpleNeatExperiment(random, innovation = innovation, avctivationFunctions)
         experiment.mutateAddConnection(neatMutator)
         assertEquals(expectedNumberOfConnections, neatMutator.connections.size)
         assertEquals(neatMutator.connections.size, neatMutator.connections.distinctBy { it.innovation }.size)
@@ -103,7 +106,7 @@ class NeatAlgorithmTest {
         val booleanSequence = listOf(true, true, true, true, true, true, true, true, false, false)
         every { random.nextBoolean() } returnsMany booleanSequence
 
-        val neatExperiment = simpleNeatExperiment(random, 0)
+        val neatExperiment = simpleNeatExperiment(random, 0, avctivationFunctions)
         val (parent1, parent2) = createTwoRelatedGenomes(random)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
@@ -124,7 +127,7 @@ class NeatAlgorithmTest {
         val booleanSequence = listOf(false, true, true, false, false)
         every { random.nextBoolean() } returnsMany booleanSequence
 
-        val neatExperiment = simpleNeatExperiment(random, 0)
+        val neatExperiment = simpleNeatExperiment(random, 0, avctivationFunctions)
         val (parent1, parent2) = createTwoRelatedGenomes(random)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
@@ -146,7 +149,7 @@ class NeatAlgorithmTest {
         val booleanSequence = listOf(false, true, true, false, false)
         every { random.nextBoolean() } returnsMany booleanSequence
 
-        val neatExperiment = simpleNeatExperiment(random, 0)
+        val neatExperiment = simpleNeatExperiment(random, 0, avctivationFunctions)
         val (parent1, parent2) = createTwoRelatedGenomes(random)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
@@ -227,6 +230,6 @@ private fun <A> Pair<A, A>.take(boolean: Boolean): A {
     return if (boolean) first else second
 }
 
-fun NeatMutator.newNode(): NodeGene {
-    return NodeGene(lastNode.node + 1, NodeType.Hidden,)
+fun NeatMutator.newNode(activationFunction: ActivationFunction, node : Int ): NodeGene {
+    return NodeGene(node, NodeType.Hidden, activationFunction)
 }
