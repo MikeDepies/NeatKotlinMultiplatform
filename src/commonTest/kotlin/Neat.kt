@@ -76,7 +76,7 @@ class NeatTest {
         val neatMutator = neatMutator(2, 2)
         neatMutator.apply {
             val nodeId = lastNode.node + 1
-            val node = NodeGene(nodeId, NodeType.Hidden)
+            val node = NodeGene(nodeId, NodeType.Hidden,)
             addNode(node)
             assertTrue(neatMutator.connectionsFrom(node).isEmpty())
             assertTrue(neatMutator.connectionsTo(node).isEmpty())

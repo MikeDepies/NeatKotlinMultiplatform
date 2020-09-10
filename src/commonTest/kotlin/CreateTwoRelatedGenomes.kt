@@ -5,11 +5,11 @@ data class CrossOverCandidate(val parent1: NeatMutator, val parent2: NeatMutator
 fun createTwoRelatedGenomes(random: Random): CrossOverCandidate {
     fun weight() = randomWeight(random)
     val nodeGenes1 = listOf(
-        NodeGene(1, NodeType.Input),
-        NodeGene(2, NodeType.Input),
-        NodeGene(3, NodeType.Input),
-        NodeGene(4, NodeType.Output),
-        NodeGene(5, NodeType.Hidden)
+        NodeGene(1, NodeType.Input,),
+        NodeGene(2, NodeType.Input,),
+        NodeGene(3, NodeType.Input,),
+        NodeGene(4, NodeType.Output,),
+        NodeGene(5, NodeType.Hidden,)
     )
 
     val connectionGenes1 = listOf(
@@ -23,12 +23,12 @@ fun createTwoRelatedGenomes(random: Random): CrossOverCandidate {
 
 
     val nodeGenes2 = listOf(
-        NodeGene(1, NodeType.Input),
-        NodeGene(2, NodeType.Input),
-        NodeGene(3, NodeType.Input),
-        NodeGene(4, NodeType.Output),
-        NodeGene(5, NodeType.Hidden),
-        NodeGene(6, NodeType.Hidden)
+        NodeGene(1, NodeType.Input,),
+        NodeGene(2, NodeType.Input,),
+        NodeGene(3, NodeType.Input,),
+        NodeGene(4, NodeType.Output,),
+        NodeGene(5, NodeType.Hidden,),
+        NodeGene(6, NodeType.Hidden,)
     )
 
     val connectionGenes2 = listOf(

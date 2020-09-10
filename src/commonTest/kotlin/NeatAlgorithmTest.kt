@@ -49,7 +49,7 @@ class NeatAlgorithmTest {
     private fun compatibilityDistanceData() = CompatibilityDistanceData(E = 5, N = 1, D = 4, W = .72f)
 
     @Test
-    fun `compability distance measure c1=1 c2=0 c3=0`() {
+    fun `compatibility distance measure c1=1 c2=0 c3=0`() {
         val c1 = 1f
         val c2 = 0f
         val c3 = 0f
@@ -59,7 +59,7 @@ class NeatAlgorithmTest {
     }
 
     @Test
-    fun `compability distance measure c1=0 c2=1 c3=0`() {
+    fun `compatibility distance measure c1=0 c2=1 c3=0`() {
         val c1 = 0f
         val c2 = 1f
         val c3 = 0f
@@ -69,7 +69,7 @@ class NeatAlgorithmTest {
     }
 
     @Test
-    fun `compability distance measure c1=0 c2=0 c3=1`() {
+    fun `compatibility distance measure c1=0 c2=0 c3=1`() {
         val c1 = 0f
         val c2 = 0f
         val c3 = 1f
@@ -192,7 +192,7 @@ class NeatAlgorithmTest {
     private fun List<ConnectionGene>.takeInnovations(
         excessInnovationNumbers: List<Int>
     ) = filter { c -> excessInnovationNumbers.any { c.innovation == it } }
-    //Do we use a Score Registry insteadd of a FitnessModel object? that way we can generalize it to a
+    //Do we use a Score Registry instead of a FitnessModel object? that way we can generalize it to a
     //lambda to resolve the score for a given model.
 
 
@@ -228,5 +228,5 @@ private fun <A> Pair<A, A>.take(boolean: Boolean): A {
 }
 
 fun NeatMutator.newNode(): NodeGene {
-    return NodeGene(lastNode.node + 1, NodeType.Hidden)
+    return NodeGene(lastNode.node + 1, NodeType.Hidden,)
 }

@@ -1,6 +1,6 @@
 import kotlin.random.*
 
-data class NodeGene(var node: Int, val nodeType: NodeType)
+data class NodeGene(var node: Int, val nodeType: NodeType, var activationFunction: (Float) -> Float)
 data class ConnectionGene(
     var inNode: Int,
     var outNode: Int,
@@ -18,6 +18,7 @@ enum class NodeType {
  * where as the experiment decides on the type of operations
  */
 interface NeatExperiment {
+    val random : Random
     fun mutateAddConnection(neatMutator: NeatMutator)
     fun mutateAddNode(neatMutator: NeatMutator)
     fun nextInnovation(): Int
@@ -44,12 +45,12 @@ fun neatMutator(inputNumber: Int, outputNumber: Int, random: Random = Random): N
     val simpleNeatMutator = SimpleNeatMutator(listOf(), listOf())
     var nodeNumber = 0
     repeat(inputNumber) {
-        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Input))
+        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Input,))
     }
 //    val hiddenNode = NodeGene(nodeNumber++, NodeType.Hidden)
 //    simpleNeatMutator.addNode(hiddenNode)
     repeat(outputNumber) {
-        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Output))
+        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Output,))
     }
     var innovation = 0
     for (input in simpleNeatMutator.inputNodes) {

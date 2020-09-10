@@ -1,0 +1,3 @@
+- Add activation functino to Node
+- implement XOR experiment
+- 

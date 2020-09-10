@@ -2,11 +2,14 @@ import kotlin.random.*
 
 fun simpleNeatExperiment(random: Random, innovation: Int): NeatExperiment {
     return object : NeatExperiment {
+
         private val excessWeight = 1f
         private val disjointWeight = 1f
         private val weightDeltaWeight = 1f
         private var innovation = innovation
         private val normalizeThreshold = 20
+        override val random: Random get() = random
+
         override fun mutateAddConnection(neatMutator: NeatMutator) {
             val randomSourceNode = neatMutator.nodes.random(random)
             val poolOfTargetNodes = neatMutator.nodes.filterNot {
@@ -26,7 +29,7 @@ fun simpleNeatExperiment(random: Random, innovation: Int): NeatExperiment {
 
         override fun mutateAddNode(neatMutator: NeatMutator) {
             val randomConnection = neatMutator.connections.random(random)
-            val node = NodeGene(neatMutator.lastNode.node + 1, NodeType.Hidden)
+            val node = NodeGene(neatMutator.lastNode.node + 1, NodeType.Hidden,)
             val copiedConnection = randomConnection.copy(innovation = nextInnovation(), inNode = node.node)
             val newEmptyConnection = ConnectionGene(randomConnection.inNode, node.node, 1f, true, nextInnovation())
             randomConnection.enabled = false
