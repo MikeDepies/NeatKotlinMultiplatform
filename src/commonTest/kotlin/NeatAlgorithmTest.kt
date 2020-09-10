@@ -1,14 +1,13 @@
 import io.mockk.*
-import kotlin.math.*
+import setup.*
 import kotlin.random.*
 import kotlin.test.*
 
 data class CompatibilityDistanceData(val E: Int, val N: Int, val D: Int, val W: Float)
 
 
-private val avctivationFunctions = listOf(Identity)
-
 class NeatAlgorithmTest {
+    private val activationFunctions = listOf(Identity)
 
     @Test
     fun `mutate add node to model`() {
@@ -19,7 +18,7 @@ class NeatAlgorithmTest {
         val neatMutator = neatMutator(4, 2, random)
         val innovation = lastInnovation(neatMutator) + 1
         val nodeId = 6
-        val experiment = simpleNeatExperiment(random, innovation, nodeId, avctivationFunctions)
+        val experiment = simpleNeatExperiment(random, innovation, nodeId, activationFunctions)
         val expectedSize = 1
         experiment.mutateAddNode(neatMutator)
         val newNode = neatMutator.lastNode
@@ -36,7 +35,7 @@ class NeatAlgorithmTest {
         val expectedNumberOfConnections = 6
         val innovation = lastInnovation(neatMutator) + 1
         val nodeId = 5
-        val experiment = simpleNeatExperiment(random, innovation, nodeId, avctivationFunctions)
+        val experiment = simpleNeatExperiment(random, innovation, nodeId, activationFunctions)
         experiment.mutateAddConnection(neatMutator)
         assertEquals(expectedNumberOfConnections, neatMutator.connections.size)
         assertEquals(neatMutator.connections.size, neatMutator.connections.distinctBy { it.innovation }.size)
@@ -110,7 +109,7 @@ class NeatAlgorithmTest {
         every { random.nextBoolean() } returnsMany booleanSequence
 
         val (parent1, parent2) = createTwoRelatedGenomes(random)
-        val neatExperiment = simpleNeatExperiment(random, 11, 7, avctivationFunctions)
+        val neatExperiment = simpleNeatExperiment(random, 11, 7, activationFunctions)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
         val crossover = neatExperiment.crossover(FitnessModel(parent1, 1f), FitnessModel(parent2, 1f))
@@ -130,7 +129,7 @@ class NeatAlgorithmTest {
         val booleanSequence = listOf(false, true, true, false, false)
         every { random.nextBoolean() } returnsMany booleanSequence
 
-        val neatExperiment = simpleNeatExperiment(random, 11, 7, avctivationFunctions)
+        val neatExperiment = simpleNeatExperiment(random, 11, 7, activationFunctions)
         val (parent1, parent2) = createTwoRelatedGenomes(random)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
@@ -152,7 +151,7 @@ class NeatAlgorithmTest {
         val booleanSequence = listOf(false, true, true, false, false)
         every { random.nextBoolean() } returnsMany booleanSequence
 
-        val neatExperiment = simpleNeatExperiment(random, 11, 7, avctivationFunctions)
+        val neatExperiment = simpleNeatExperiment(random, 11, 7, activationFunctions)
         val (parent1, parent2) = createTwoRelatedGenomes(random)
         val expectedMatchingGenes =
             matchingGenes(parent1, parent2).mapIndexed { index, pair -> pair.take(booleanSequence[index]) }
@@ -204,35 +203,7 @@ class NeatAlgorithmTest {
 
 }
 
-private fun compatibilityDistance(
-    parent1: NeatMutator,
-    parent2: NeatMutator,
-    excessWeight: Float,
-    disjointWeight: Float,
-    weightDeltaWeight: Float,
-    normalizationThreshold: Int = 20
-): Float {
-    val excessCount = excess(parent1, parent2).size
-    val disjointCount = disjoint(parent1, parent2).run { disjoint1 + disjoint2 }.size
-    val matchingGenes = matchingGenes(parent1, parent2)
-    val averageSharedWeights = matchingGenes.map { (it.first.weight - it.second.weight) }.sum().div(matchingGenes.size)
-    val maxGenes = max(parent1.connections.size, parent2.connections.size)
-    val numberOfGenes = if (maxGenes < normalizationThreshold) 1 else maxGenes
-    return compatibilityDifference(
-        excessCount,
-        disjointCount,
-        averageSharedWeights,
-        numberOfGenes,
-        excessWeight,
-        disjointWeight,
-        weightDeltaWeight
-    )
-}
-
 private fun <A> Pair<A, A>.take(boolean: Boolean): A {
     return if (boolean) first else second
 }
 
-fun NeatMutator.newNode(activationFunction: ActivationFunction, node: Int): NodeGene {
-    return NodeGene(node, NodeType.Hidden, activationFunction)
-}

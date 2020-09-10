@@ -59,7 +59,7 @@ fun neatMutator(inputNumber: Int, outputNumber: Int, random: Random = Random): N
     for (input in simpleNeatMutator.inputNodes) {
 //        val weight = random.nextFloat();
         for (output in simpleNeatMutator.outputNodes) {
-            val weight = random.nextFloat();
+            val weight = random.nextFloat()
             simpleNeatMutator.addConnection(
                 ConnectionGene(
                     input.node,

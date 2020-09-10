@@ -1,6 +1,3 @@
-import kotlin.math.*
-import kotlin.test.*
-
 class SpeciationTest {
 
     fun test() {

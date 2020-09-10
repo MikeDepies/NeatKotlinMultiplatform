@@ -1,13 +1,3 @@
-import kotlin.math.*
-import kotlin.test.*
-
-class MutationTest {
-    @Test
-    fun `uniformally perturb weights`() {
-        
-    }
-}
-
 private const val standardWeightPerturbationRange = .02f
 
 /**
@@ -40,7 +30,7 @@ fun uniformWeightPerturbation(range: Float = standardWeightPerturbationRange): M
     }
 }
 
-private fun NeatExperiment.weightPerturbation(range: Float) = (random.nextFloat() * (range * 2)) - range
+fun NeatExperiment.weightPerturbation(range: Float) = (random.nextFloat() * (range * 2)) - range
 
 
 fun mutateNodeActivationFunction(activationFunctions: List<ActivationFunction>): Mutation = { neatMutator ->

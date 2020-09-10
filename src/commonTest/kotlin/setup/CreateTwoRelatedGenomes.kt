@@ -1,3 +1,12 @@
+package setup
+
+import ConnectionGene
+import Identity
+import NeatMutator
+import NodeGene
+import NodeType
+import SimpleNeatMutator
+import randomWeight
 import kotlin.random.*
 
 data class CrossOverCandidate(val parent1: NeatMutator, val parent2: NeatMutator)
