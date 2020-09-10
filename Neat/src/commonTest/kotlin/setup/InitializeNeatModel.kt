@@ -12,7 +12,7 @@ import kotlin.random.*
 fun initializeNeatModel(random: Random): NeatMutator {
     return neatMutator(1, 1, random).apply {
         val node = NodeGene(2, NodeType.Hidden, Identity)
-        val node2 = NodeGene(2, NodeType.Hidden, Identity)
+        val node2 = NodeGene(3, NodeType.Hidden, Identity)
         addNode(node)
         addNode(node2)
         val nodeSource = inputNodes.first()
