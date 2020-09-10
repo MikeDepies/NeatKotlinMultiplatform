@@ -23,6 +23,7 @@ interface NeatExperiment {
     fun mutateAddNode(neatMutator: NeatMutator)
     fun nextInnovation(): Int
     fun crossover(parent1: FitnessModel<NeatMutator>, parent2: FitnessModel<NeatMutator>): NeatMutator
+    fun nextNode(): Int
 }
 
 data class FitnessModel<T>(val model: T, val score: Float)

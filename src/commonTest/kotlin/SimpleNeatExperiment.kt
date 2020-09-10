@@ -3,6 +3,7 @@ import kotlin.random.*
 fun simpleNeatExperiment(
     random: Random,
     innovation: Int,
+    nodeInnovation: Int,
     activationFunctions: List<ActivationFunction>
 ): NeatExperiment {
     return object : NeatExperiment {
@@ -11,6 +12,7 @@ fun simpleNeatExperiment(
         private val disjointWeight = 1f
         private val weightDeltaWeight = 1f
         private var innovation = innovation
+        private var nodeInnovation = nodeInnovation
         private val normalizeThreshold = 20
         override val random: Random get() = random
 
@@ -29,7 +31,7 @@ fun simpleNeatExperiment(
 
         override fun mutateAddNode(neatMutator: NeatMutator) {
             val randomConnection = neatMutator.connections.random(random)
-            val node = NodeGene(neatMutator.lastNode.node + 1, NodeType.Hidden, activationFunctions.random(random))
+            val node = NodeGene(nextInnovation(), NodeType.Hidden, activationFunctions.random(random))
             val copiedConnection = randomConnection.copy(innovation = nextInnovation(), inNode = node.node)
             val newEmptyConnection = ConnectionGene(randomConnection.inNode, node.node, 1f, true, nextInnovation())
             randomConnection.enabled = false
@@ -43,6 +45,10 @@ fun simpleNeatExperiment(
 
         override fun nextInnovation(): Int {
             return this.innovation++
+        }
+
+        override fun nextNode(): Int {
+            return nodeInnovation
         }
 
         override fun crossover(parent1: FitnessModel<NeatMutator>, parent2: FitnessModel<NeatMutator>): NeatMutator {

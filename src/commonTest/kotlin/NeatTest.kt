@@ -10,7 +10,6 @@ class NeatTest {
                 neat.addConnection(connectionGene)
             }
         }
-        //new single connection gene added connecting two previously unconnected ndoes.
     }
 
     @Test
@@ -22,7 +21,6 @@ class NeatTest {
                 neat.addConnection(connectionGene)
             }
         }
-        //new single connection gene added connecting two previously unconnected ndoes.
     }
 
     @Test
@@ -75,20 +73,11 @@ class NeatTest {
     fun `Node without connections`() {
         val neatMutator = neatMutator(2, 2)
         neatMutator.apply {
-            val nodeId = lastNode.node + 1
+            val nodeId = 4
             val node = NodeGene(nodeId, NodeType.Hidden, Identity)
             addNode(node)
             assertTrue(neatMutator.connectionsFrom(node).isEmpty())
             assertTrue(neatMutator.connectionsTo(node).isEmpty())
         }
-    }
-
-
-    fun mutateAddNode() {
-        //an existing connection is split. New node placed where the old connection was.
-        //Old connection is disabled
-        //two new connections are created.
-        //connection 1 leading into new node has a weight of 1.
-        //connection 2 leaving the new node and connecting to the outgoing node has the weight of the old connection
     }
 }
