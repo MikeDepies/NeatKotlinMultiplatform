@@ -1,13 +1,15 @@
 plugins {
     kotlin("multiplatform") version "1.4.0"
+
 }
+
 group = "me.michael.depies"
 version = "1.0-SNAPSHOT"
+
 repositories {
     mavenCentral()
 }
 dependencies {
-    commonTestImplementation("io.mockk:mockk:1.10.0")
 }
 
 kotlin {
@@ -47,7 +49,11 @@ kotlin {
         val jvmMain by getting
         val jvmTest by getting {
             dependencies {
+                implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
+                implementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
+                runtimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+                implementation("io.mockk:mockk:1.10.0")
             }
         }
         val jsMain by getting
@@ -60,5 +66,5 @@ kotlin {
         val nativeTest by getting
     }
 }
-
-val artifactID = "251fc876e074238ffd14be52c55c251b7b973ef3"
+apply(from = "maven.publish.gradle.kts")
+//val artifactID = "251fc876e074238ffd14be52c55c251b7b973ef3"
