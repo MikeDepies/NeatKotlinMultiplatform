@@ -40,8 +40,8 @@ fun mutateNodeActivationFunction(activationFunctions: List<ActivationFunction>):
 
 fun mutatePerturbBiasConnections(biasNode: Int = 0, range: Float = standardWeightPerturbationRange): Mutation =
     { neatMutator ->
-        val biasNode = neatMutator.inputNodes[biasNode]
-        neatMutator.connectionsFrom(biasNode).forEach { connectionGene ->
+        val node = neatMutator.inputNodes[biasNode]
+        neatMutator.connectionsFrom(node).forEach { connectionGene ->
             val weightPerturbation = weightPerturbation(range)
             connectionGene.weight += weightPerturbation
         }
