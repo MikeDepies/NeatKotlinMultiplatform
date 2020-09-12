@@ -9,6 +9,28 @@ import neatMutator
 import randomWeight
 import kotlin.random.*
 
+fun initializeCyclicConnectionsNeatModel(random: Random): NeatMutator {
+    return neatMutator(1, 1, random).apply {
+        val nodeGene = NodeGene(2, NodeType.Hidden, Identity)
+        addNode(nodeGene)
+        addConnection(
+            connectNodes(
+                inputNodes[0], nodeGene, randomWeight(random), 2
+            )
+        )
+        addConnection(
+            connectNodes(
+                nodeGene, outputNodes[0], randomWeight(random), 2
+            )
+        )
+        addConnection(
+            connectNodes(
+                nodeGene, nodeGene, randomWeight(random), 2
+            )
+        )
+    }
+}
+
 fun initializeNeatModel(random: Random): NeatMutator {
     return neatMutator(1, 1, random).apply {
         val node = NodeGene(2, NodeType.Hidden, Identity)
