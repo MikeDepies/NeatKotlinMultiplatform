@@ -51,8 +51,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
-                implementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
-                runtimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
                 implementation("io.mockk:mockk:1.10.0")
             }
         }
@@ -66,5 +64,5 @@ kotlin {
         val nativeTest by getting
     }
 }
-apply(from = "maven.publish.gradle.kts")
+//apply(from = "maven.publish.gradle.kts")
 //val artifactID = "251fc876e074238ffd14be52c55c251b7b973ef3"
