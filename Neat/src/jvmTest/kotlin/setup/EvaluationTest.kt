@@ -33,9 +33,9 @@ class EvaluationTest {
 
     @Test
     fun `evaluate network (1,1) with weights (,1, ,1) input 1f`() {
-        val expected = listOf(.001f)
+        val expected = listOf(.1f)
         val random = mockk<Random>()
-        every { random.nextFloat() } returnsMany listOf(.1f, .1f)
+        every { random.nextFloat() } returnsMany listOf(.1f)
         val network = neatMutator(1, 1, random).toNetwork()
         val input = listOf(1f)
         network.evaluate(input)
@@ -68,48 +68,59 @@ fun NeatMutator.evaluate(input: List<Float>): List<Float> {
 
 data class NetworkNode(val activationFunction: ActivationFunction, var value: Float)
 
+fun NetworkNode.activate() {
+    value = this.activationFunction(value)
+}
+
+
 fun NeatMutator.toNetwork(): ActivatableNetwork {
     val idNodeMap = nodes.map { it.node to it }.toMap()
     val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f) }.toMap()
     val nodeMap = nodes.map { networkNodeMap.getValue(it) to it }.toMap()
     val inputNodeSet = inputNodes.mapNotNull { networkNodeMap[it] }
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
+    fun Set<NodeGene>.activate() = forEach { networkNodeMap.getValue(it).activate() }
+
     fun rollForward(): (List<Float>) -> Unit {
         var activeSet = inputNodes.toSet()
         val activationSet = mutableSetOf<NetworkNode>()
+        fun networkNotFullyActivated() = (activationSet.size + outputNodes.size) < nodes.size
         val computationSet = sequence<() -> Unit> {
-            while (activationSet.size < nodes.size) {
-                val connections = activeSet.flatMap { node ->
+            while (networkNotFullyActivated()) {
+                val capturedSet = activeSet
+                val connections = capturedSet.flatMap { node ->
                     connectionsFrom(node)
                 }
+
                 val nextNodeMap = connections.groupBy { idNodeMap.getValue(it.outNode) }
                 val fn = {
+//
+                    capturedSet.activate()
                     connections.forEach { connection ->
                         val inputValue = idNodeMap.getValue(connection.inNode)
                         val outValue = idNodeMap.getValue(connection.outNode)
-                        val outputNode = networkNodeMap.getValue(outValue)
                         val inputNode = networkNodeMap.getValue(inputValue)
+                        val outputNode = networkNodeMap.getValue(outValue)
                         outputNode.value += inputNode.value * connection.weight
                     }
-                    activeSet = nextNodeMap.keys
-                    activeSet.forEach {
-                        val node = networkNodeMap.getValue(it)
-                        node.value = node.activationFunction(node.value)
-                    }
+
+
                 }
+                activeSet.map { networkNodeMap.getValue(it) }.forEach { activationSet += it }
+                activeSet = nextNodeMap.keys
                 yield(fn)
             }
-        }.toList()
+        }
         return { input: List<Float> ->
             input.indices.forEach {
                 inputNodeSet[it].value = input[it]
-                activationSet += inputNodeSet[it]
             }
-            computationSet.forEach { it() }
-
-
-//            sequence<List<NetworkNode>> { }
-
+            computationSet.forEach {
+                it()
+            }
+            outputNodeSet.forEach {
+                it.activate()
+            }
         }
     }
 

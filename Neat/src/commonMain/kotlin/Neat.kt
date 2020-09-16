@@ -47,7 +47,12 @@ interface NeatMutator {
     fun connectionsFrom(first: NodeGene): List<ConnectionGene>
 }
 
-fun neatMutator(inputNumber: Int, outputNumber: Int, random: Random = Random): NeatMutator {
+fun neatMutator(
+    inputNumber: Int,
+    outputNumber: Int,
+    random: Random = Random,
+    function: ActivationFunction = Identity
+): NeatMutator {
     val simpleNeatMutator = SimpleNeatMutator(listOf(), listOf())
     var nodeNumber = 0
     repeat(inputNumber) {
@@ -56,7 +61,7 @@ fun neatMutator(inputNumber: Int, outputNumber: Int, random: Random = Random): N
 //    val hiddenNode = NodeGene(nodeNumber++, NodeType.Hidden)
 //    simpleNeatMutator.addNode(hiddenNode)
     repeat(outputNumber) {
-        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Output, identity()))
+        simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Output, function))
     }
     var innovation = 0
     for (input in simpleNeatMutator.inputNodes) {
