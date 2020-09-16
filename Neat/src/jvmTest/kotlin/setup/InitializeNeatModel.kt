@@ -15,17 +15,17 @@ fun initializeCyclicConnectionsNeatModel(random: Random): NeatMutator {
         addNode(nodeGene)
         addConnection(
             connectNodes(
-                inputNodes[0], nodeGene, randomWeight(random), 2
+                inputNodes[0], nodeGene, randomWeight(random).also { println(it) }, 2
             )
         )
         addConnection(
             connectNodes(
-                nodeGene, outputNodes[0], randomWeight(random), 2
+                nodeGene, outputNodes[0], randomWeight(random).also { println(it) }, 3
             )
         )
         addConnection(
             connectNodes(
-                nodeGene, nodeGene, randomWeight(random), 2
+                nodeGene, nodeGene, randomWeight(random).also { println(it) }, 4
             )
         )
     }

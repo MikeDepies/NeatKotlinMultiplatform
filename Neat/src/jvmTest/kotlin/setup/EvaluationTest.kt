@@ -10,12 +10,19 @@ import kotlin.random.*
 import kotlin.test.*
 
 class EvaluationTest {
-    //    @Test
+    @Test
     fun `don't repeat node activations`() {
         val random = mockk<Random>()
+        every { random.nextFloat() } returnsMany listOf(01f)
+
         val neatMutator = initializeCyclicConnectionsNeatModel(random)
         val input = listOf(1f)
-        neatMutator.evaluate(input)
+        val network = neatMutator.toNetwork()
+        network.evaluate(input)
+        val result = network.output()
+        val expected = listOf(2f)
+        assertEquals(expected, result)
+//        neatMutator.evaluate(input)
 //        assertEquals(1f, neatMutator.outputNodes[0].value)
     }
 
@@ -61,10 +68,13 @@ class EvaluationTest {
     @Test
     fun `evaluate network (1,1) with weights (1, 1) input 2`() {
         val expected = listOf(2f)
-        val random = mockk<Random>()
-        every { random.nextFloat() } returnsMany listOf(1f, 1f)
-        val network = neatMutator(1, 1, random).toNetwork()
-        val input = listOf(2f)
+        val b = mockk<Random>()
+        every { b.nextFloat() } returnsMany listOf(1f, 2f, .4f)
+//        b.nextFloat()
+
+//        every { random.nextFloat() } returnsMany listOf(.3f, .6f)
+        val network = neatMutator(1, 1, b).toNetwork()
+        val input = listOf(1f)
         network.evaluate(input)
         val result = network.output()
 //        val result = neatMutator.evaluate(input)
@@ -73,32 +83,26 @@ class EvaluationTest {
 
 }
 
-fun NeatMutator.evaluate(input: List<Float>): List<Float> {
-    val nodeActivationSet = mutableSetOf<NodeGene>()
-//    inputNodes.map { connectionsFrom(it).map {  } }
-//    return outputNodes.map { it.value }
-    TODO()
-}
 
-data class NetworkNode(val activationFunction: ActivationFunction, var value: Float)
+data class NetworkNode(val activationFunction: ActivationFunction, var value: Float, var activatedValue: Float)
 
 fun NetworkNode.activate() {
-    value = this.activationFunction(value)
+    activatedValue = this.activationFunction(value)
+    value = 0f
 }
 typealias ComputationStrategy = NeatMutator.() -> Unit
 
 fun Set<NodeGene>.activate(map: Map<NodeGene, NetworkNode>) = forEach { map.getValue(it).activate() }
 fun NeatMutator.toNetwork(): ActivatableNetwork {
     val idNodeMap = nodes.map { it.node to it }.toMap()
-    val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f) }.toMap()
-    val nodeMap = nodes.map { networkNodeMap.getValue(it) to it }.toMap()
+    val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f, 0f) }.toMap()
     val inputNodeSet = inputNodes.mapNotNull { networkNodeMap[it] }
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
     fun applyInputValues(inValues: List<Float>) {
         inValues.indices.forEach { inputNodeSet[it].value = inValues[it] }
     }
 
-    val computationStrategy: NeatMutator.() -> Unit = getComputationStrategy(networkNodeMap, idNodeMap)
+    val computationStrategy: ComputationStrategy = getComputationStrategy(networkNodeMap, idNodeMap)
     return object : ActivatableNetwork {
         override fun evaluate(input: List<Float>) {
             applyInputValues(input)
@@ -106,17 +110,16 @@ fun NeatMutator.toNetwork(): ActivatableNetwork {
         }
 
         override fun output(): List<Float> {
-            return outputNodeSet.map { it.value }
+            return outputNodeSet.map { it.activatedValue }
         }
 
     }
-
 }
 
 private fun NeatMutator.getComputationStrategy(
     networkNodeMap: Map<NodeGene, NetworkNode>,
     idNodeMap: Map<Int, NodeGene>
-): NeatMutator.() -> Unit {
+): ComputationStrategy {
     val computationSequence = computationSequence(networkNodeMap, idNodeMap)
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
     return {
@@ -131,7 +134,7 @@ fun NeatMutator.computationSequence(
     idNodeMap: Map<Int, NodeGene>
 ): Sequence<() -> Unit> {
     return sequence {
-        val activationSet = mutableSetOf<NetworkNode>()
+        val activationSet = mutableSetOf<NodeGene>()
         var activeSet = inputNodes.toSet()
         fun networkNotFullyActivated() = (activationSet.size + outputNodes.size) < nodes.size
         while (networkNotFullyActivated()) {
@@ -151,10 +154,9 @@ fun NeatMutator.computationSequence(
                     outputNode.value += inputNode.value * connection.weight
                 }
 
-
             }
-            activeSet.map { networkNodeMap.getValue(it) }.forEach { activationSet += it }
-            activeSet = nextNodeMap.keys
+            activeSet.forEach { activationSet += it }
+            activeSet = nextNodeMap.keys.filter { it !in activationSet }.toSet()
             yield(fn)
         }
     }
