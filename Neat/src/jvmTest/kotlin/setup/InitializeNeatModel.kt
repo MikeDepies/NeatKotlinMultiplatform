@@ -1,5 +1,6 @@
 package setup
 
+import ActivationFunction
 import Identity
 import NeatMutator
 import NodeGene
@@ -9,23 +10,25 @@ import neatMutator
 import randomWeight
 import kotlin.random.*
 
-fun initializeCyclicConnectionsNeatModel(random: Random): NeatMutator {
-    return neatMutator(1, 1, random).apply {
-        val nodeGene = NodeGene(2, NodeType.Hidden, Identity)
+fun initializeCyclicConnectionsNeatModel(
+    random: Random, outputActivation: ActivationFunction = Identity, hiddenActivation: ActivationFunction = Identity
+): NeatMutator {
+    return neatMutator(1, 1, random, function = outputActivation).apply {
+        val nodeGene = NodeGene(2, NodeType.Hidden, hiddenActivation)
         addNode(nodeGene)
         addConnection(
             connectNodes(
-                inputNodes[0], nodeGene, randomWeight(random).also { println(it) }, 2
+                inputNodes[0], nodeGene, randomWeight(random), 2
             )
         )
         addConnection(
             connectNodes(
-                nodeGene, outputNodes[0], randomWeight(random).also { println(it) }, 3
+                nodeGene, outputNodes[0], randomWeight(random), 3
             )
         )
         addConnection(
             connectNodes(
-                nodeGene, nodeGene, randomWeight(random).also { println(it) }, 4
+                nodeGene, nodeGene, randomWeight(random), 4
             )
         )
     }

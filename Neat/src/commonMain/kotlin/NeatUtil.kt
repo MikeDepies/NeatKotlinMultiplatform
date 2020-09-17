@@ -54,6 +54,7 @@ fun <T> FitnessModel<T>.isMoreFitThan(model: FitnessModel<T>) = score > model.sc
 fun <T> FitnessModel<T>.equallyFit(model: FitnessModel<T>) = score == model.score
 fun <A> Pair<A, A>.random(random: Random = Random) = if (random.nextBoolean()) first else second
 interface ActivatableNetwork {
+    val outputNodes: List<NetworkNode>
     fun evaluate(input: List<Float>) : Unit
     fun output(): List<Float>
 }

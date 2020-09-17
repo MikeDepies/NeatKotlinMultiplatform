@@ -1,7 +1,7 @@
 class SimpleActivatableNetwork(
     private val inputNodes: List<NetworkNode>,
-    private val outputNodes: List<NetworkNode>,
-    val computationStrategy: ComputationStrategy
+    override val outputNodes: List<NetworkNode>,
+    private val computationStrategy: ComputationStrategy
 ) : ActivatableNetwork {
     private fun applyInputValues(inValues: List<Float>) {
         inValues.indices.forEach { inputNodes[it].value = inValues[it] }

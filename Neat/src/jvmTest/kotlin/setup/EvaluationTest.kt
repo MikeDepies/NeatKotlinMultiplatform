@@ -14,17 +14,22 @@ import kotlin.test.*
 
 class EvaluationTest {
     @Test
-    fun `don't repeat node activations`() {
+    fun `Cyclic connection causing a +1 sequence when input = 1`() {
         val random = mockk<Random>()
-        every { random.nextFloat() } returnsMany listOf(01f)
+        every { random.nextFloat() } returnsMany listOf(1f)
 
-        val neatMutator = initializeCyclicConnectionsNeatModel(random)
+        val neatMutator = initializeCyclicConnectionsNeatModel(random, outputActivation = sigmoidalTransferFunction)
         val input = listOf(1f)
         val network = neatMutator.toNetwork()
-        network.evaluate(input)
-        val result = network.output()
-        val expected = listOf(2f)
-        assertEquals(expected, result)
+        repeat(5) {
+            network.evaluate(input)
+
+            val result = network.output()
+
+            val expected = listOf(1f + it.toFloat())
+//            assertEquals(expected, result)
+            println("value=${network.outputNodes.map { it.value }}\nactivated=$result")
+        }
 //        neatMutator.evaluate(input)
 //        assertEquals(1f, neatMutator.outputNodes[0].value)
     }
@@ -72,12 +77,12 @@ class EvaluationTest {
     fun `evaluate network (1,1) with weights (1, 1) input 2`() {
         val expected = listOf(2f)
         val b = mockk<Random>()
-        every { b.nextFloat() } returnsMany listOf(1f, 2f, .4f)
+        every { b.nextFloat() } returnsMany listOf(1f)
 //        b.nextFloat()
 
 //        every { random.nextFloat() } returnsMany listOf(.3f, .6f)
         val network = neatMutator(1, 1, b).toNetwork()
-        val input = listOf(1f)
+        val input = listOf(2f)
         network.evaluate(input)
         val result = network.output()
 //        val result = neatMutator.evaluate(input)

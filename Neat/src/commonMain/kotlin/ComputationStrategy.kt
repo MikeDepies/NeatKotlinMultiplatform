@@ -8,7 +8,10 @@ fun NeatMutator.getComputationStrategy(
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
     return {
         computationSequence.forEach { it() }
+        println()
+        println("output")
         outputNodeSet.forEach { it.activate() }
+        println()
     }
 
 }
@@ -35,7 +38,7 @@ fun NeatMutator.computationSequence(
                     val outValue = idNodeMap.getValue(connection.outNode)
                     val inputNode = networkNodeMap.getValue(inputValue)
                     val outputNode = networkNodeMap.getValue(outValue)
-                    outputNode.value += inputNode.value * connection.weight
+                    outputNode.value += inputNode.activatedValue * connection.weight
                 }
 
             }
