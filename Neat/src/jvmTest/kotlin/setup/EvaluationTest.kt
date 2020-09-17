@@ -18,7 +18,7 @@ class EvaluationTest {
         val random = mockk<Random>()
         every { random.nextFloat() } returnsMany listOf(1f)
 
-        val neatMutator = initializeCyclicConnectionsNeatModel(random, outputActivation = sigmoidalTransferFunction)
+        val neatMutator = initializeCyclicConnectionsNeatModel(random)
         val input = listOf(1f)
         val network = neatMutator.toNetwork()
         repeat(5) {
@@ -27,7 +27,7 @@ class EvaluationTest {
             val result = network.output()
 
             val expected = listOf(1f + it.toFloat())
-//            assertEquals(expected, result)
+            assertEquals(expected, result)
             println("value=${network.outputNodes.map { it.value }}\nactivated=$result")
         }
 //        neatMutator.evaluate(input)

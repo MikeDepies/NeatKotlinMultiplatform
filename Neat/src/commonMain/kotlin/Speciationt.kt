@@ -3,8 +3,8 @@ fun adjustedFitnessCalculation(
     model: FitnessModel<NeatMutator>,
     deltaFunction: DeltaFunction,
     sharingFunction: SharingFunction
-) {
-    population.map { sharingFunction(deltaFunction(model.model, it)) }
+): Float {
+    return model.score / (population.map { sharingFunction(deltaFunction(model.model, it)).toFloat() }.sum())
 }
 typealias SharingFunction = (Float) -> Int
 typealias DeltaFunction = (NeatMutator, NeatMutator) -> Float
