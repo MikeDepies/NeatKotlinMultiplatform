@@ -42,7 +42,7 @@ class SpeciationTest {
         return population.map { neatMutator ->
             val network = neatMutator.toNetwork()
             val score = inputOutput.map {
-                network.evaluate(it.first)
+                network.evaluate(it.first, true)
                 if (network.output() == it.second) 1f else 0f
             }.sum()
             FitnessModel(neatMutator, score) to network
@@ -50,18 +50,22 @@ class SpeciationTest {
     }
 
     private fun setupEnvironment(): List<EnvironmentQuery> {
-        return listOf(
-            { listOf(0f, 0f) to listOf(0f) },
-            { listOf(0f, 1f) to listOf(0f) },
-            { listOf(1f, 0f) to listOf(1f) },
-            { listOf(1f, 1f) to listOf(1f) },
-        )
+        return XORTruthTable()
     }
 
     private fun generateInitialPopulation(random: Random, populationSize: Int): List<NeatMutator> {
         return (0 until populationSize).map { neatMutator(3, 1, random, sigmoidalTransferFunction) }
     }
 
+}
+
+private fun XORTruthTable(): List<() -> Pair<List<Float>, List<Float>>> {
+    return listOf(
+        { listOf(0f, 0f) to listOf(0f) },
+        { listOf(0f, 1f) to listOf(0f) },
+        { listOf(1f, 0f) to listOf(1f) },
+        { listOf(1f, 1f) to listOf(1f) },
+    )
 }
 
 private fun standardCompatibilityTest(
