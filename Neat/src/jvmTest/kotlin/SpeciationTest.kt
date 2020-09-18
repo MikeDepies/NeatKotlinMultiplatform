@@ -67,4 +67,4 @@ class SpeciationTest {
 private fun standardCompatibilityTest(
     sharingFunction: SharingFunction,
     df: DeltaFunction
-) = { neat1, neat2 -> sharingFunction(df(neat1, neat2)) == 1 }
+) : CompatibilityTest = { neat1, neat2 -> sharingFunction(df(neat1, neat2)) == 1 }
