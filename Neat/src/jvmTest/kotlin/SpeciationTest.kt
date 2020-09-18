@@ -1,3 +1,4 @@
+import org.junit.Test
 import setup.*
 import kotlin.random.*
 
@@ -8,20 +9,23 @@ class SpeciationTest {
         .5f percentChanceToMutate uniformWeightPerturbation()
     }
 
+    @Test
     fun process() {
         var population: List<NeatMutator> = generateInitialPopulation(Random(0), 100)
         val df: DeltaFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
-
+        val sharingFunction = shFunction(3f)
+        val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
         val times = 100
+        speciationController.speciate(population)
         repeat(times) {
             val setupEnvironment = setupEnvironment()
             val inputOutput = setupEnvironment.map { it() }
             val evaluatePopulation = evaluatePopulation(population, inputOutput)
             val adjustedPopulationScore = evaluatePopulation.map { fitnessModel ->
-                val adjustedFitness = adjustedFitnessCalculation(population, fitnessModel, df, shFunction(3f))
+                val adjustedFitness = adjustedFitnessCalculation(population, fitnessModel.first, df, sharingFunction)
                 adjustedFitness to fitnessModel
             }
-            mutatePopulation(adjustedPopulationScore)
+//            mutatePopulation(adjustedPopulationScore)
         }
     }
 
@@ -34,14 +38,14 @@ class SpeciationTest {
     private fun evaluatePopulation(
         population: List<NeatMutator>,
         inputOutput: List<EnvironmentEntryElement>
-    ): List<FitnessModel<NeatMutator>> {
+    ): List<Pair<FitnessModel<NeatMutator>, ActivatableNetwork>> {
         return population.map { neatMutator ->
             val network = neatMutator.toNetwork()
             val score = inputOutput.map {
                 network.evaluate(it.first)
                 if (network.output() == it.second) 1f else 0f
             }.sum()
-            FitnessModel(neatMutator, score)
+            FitnessModel(neatMutator, score) to network
         }
     }
 
@@ -55,10 +59,12 @@ class SpeciationTest {
     }
 
     private fun generateInitialPopulation(random: Random, populationSize: Int): List<NeatMutator> {
-        return (0 until populationSize).map { neatMutator(1, 1, random, sigmoidalTransferFunction) }
+        return (0 until populationSize).map { neatMutator(3, 1, random, sigmoidalTransferFunction) }
     }
+
 }
 
-typealias EnvironmentQuery = () -> EnvironmentEntryElement
-typealias EnvironmentEntryElement = Pair<List<Float>, List<Float>>
-typealias AdjustedFitnessModel = Pair<Float, FitnessModel<NeatMutator>>
+private fun standardCompatibilityTest(
+    sharingFunction: SharingFunction,
+    df: DeltaFunction
+) = { neat1, neat2 -> sharingFunction(df(neat1, neat2)) == 1 }

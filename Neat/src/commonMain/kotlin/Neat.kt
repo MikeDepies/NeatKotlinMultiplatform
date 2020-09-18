@@ -16,6 +16,11 @@ enum class NodeType {
     Input, Hidden, Output
 }
 
+data class Species(val id : Int)
+
+typealias EnvironmentQuery = () -> EnvironmentEntryElement
+typealias EnvironmentEntryElement = Pair<List<Float>, List<Float>>
+typealias AdjustedFitnessModel = Pair<Float, FitnessModel<NeatMutator>>
 /**
  * Random/configuration part of the neat algorithm. This will utilize a Mutator that can peform the desire operation,
  * where as the experiment decides on the type of operations
@@ -86,6 +91,8 @@ fun neatMutator(
 class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGene>) : NeatMutator {
     private val _connectableNodes = resolvePotentialConnections(_nodes, _connections).toMutableList()
 
+
+
     private fun resolvePotentialConnections(
         _nodes: List<NodeGene>,
         _connections: List<ConnectionGene>
@@ -149,6 +156,10 @@ class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGen
 
     override fun connectionsFrom(first: NodeGene): List<ConnectionGene> {
         return connections.filter { it.inNode == first.node }
+    }
+
+    override fun toString(): String {
+        return "SimpleNeatMutator(_connectableNodes=$_connectableNodes, nodes=$nodes, connections=$connections)"
     }
 
 }

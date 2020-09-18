@@ -8,10 +8,7 @@ fun NeatMutator.getComputationStrategy(
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
     return {
         computationSequence.forEach { it() }
-        println()
-        println("output")
         outputNodeSet.forEach { it.activate() }
-        println()
     }
 
 }

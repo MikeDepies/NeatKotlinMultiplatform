@@ -4,7 +4,8 @@ fun simpleNeatExperiment(
     random: Random,
     innovation: Int,
     nodeInnovation: Int,
-    activationFunctions: List<ActivationFunction>
+    activationFunctions: List<ActivationFunction>,
+    speciesId: Int
 ): NeatExperiment {
     return SimpleNeatExperiment(innovation, nodeInnovation, activationFunctions, random)
 }
@@ -18,6 +19,7 @@ fun matchingGenes(
     }.map { c1 -> c1 to parent2.connections.first { c2 -> c2.innovation == c1.innovation } }
 }
 
+
 class SimpleNeatExperiment(
     private var innovation: Int,
     private var nodeInnovation: Int,
@@ -28,6 +30,7 @@ class SimpleNeatExperiment(
 //    private var innovation = innovation
 //    private var nodeInnovation = nodeInnovation
 //    override val random: Random get() = random
+
 
     override fun mutateAddConnection(neatMutator: NeatMutator) {
         val (sourceNode, targetNode) = neatMutator.connectableNodes.random(random)
@@ -82,6 +85,7 @@ class SimpleNeatExperiment(
         val nodes = if (parent1.isMoreFitThan(parent2)) parent1.model.nodes else parent2.model.nodes
         return SimpleNeatMutator(nodes, offSpringConnections)
     }
+
 
 
 }
