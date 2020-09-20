@@ -13,7 +13,6 @@ class SimpleActivatableNetwork(
     }
 
     override fun evaluate(input: List<Float>, bias : Boolean) {
-//        val inValues = if (bias) listofinput else input
         applyInputValues(input, bias)
         computationStrategy()
     }

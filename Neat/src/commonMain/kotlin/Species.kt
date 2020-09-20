@@ -7,10 +7,12 @@ class SpeciationController(
     private val speciesMap = mutableMapOf<Species, MutableSet<NeatMutator>>()
     fun nextSpecies(): Species = Species(speciesId++).also { speciesMap[it] = mutableSetOf() }
     fun speciate(population: List<NeatMutator>) {
+
         pruneSpeciesMap(population)
         population.forEach { neatMutator ->
             compatibleSpecies(neatMutator, compatibilityTest).let { speciesMap.addSpecies(neatMutator, it) }
         }
+
     }
 
     private fun pruneSpeciesMap(population: List<NeatMutator>) = speciesSet.forEach {
@@ -41,6 +43,11 @@ class SpeciationController(
 
     val speciesSet: Set<Species> get() = speciesMap.keys.toSet()
     fun getSpeciesPopulation(species: Species) = speciesMap.getValue(species)
+    fun sortSpeciesByFitness(fitnessForModelFn: (NeatMutator) -> Float) {
+        speciesSet.forEach {
+            speciesMap[it] = getSpeciesPopulation(it).sortedByDescending(fitnessForModelFn).toMutableSet()
+        }
+    }
 }
 
 typealias CompatibilityTest = (NeatMutator, NeatMutator) -> Boolean
