@@ -22,13 +22,47 @@ fun rollFrom(chance: Float): MutationRoll = {
     (random.nextFloat() <= chance)
 }
 
-fun uniformWeightPerturbation(range: Float = standardWeightPerturbationRange): Mutation = { neatMutator ->
+typealias ConnectionMutation = ConnectionGene.() -> Unit
+
+fun NeatExperiment.perturbConnectionWeight(range: Float = standardWeightPerturbationRange): ConnectionMutation {
     if (range < 0) error("range [$range] must be greater than 0")
-    neatMutator.connections.forEach { connection ->
+    return {
         val perturbation = weightPerturbation(range)
-        connection.weight += perturbation
+        weight += perturbation
     }
 }
+
+fun NeatExperiment.assignConnectionRandomWeight(): ConnectionMutation = { weight = randomWeight(random) }
+
+fun NeatExperiment.ifElseRollConnectionMutation(
+    chanceToReassignWeight: Float,
+    onRollSuccess: ConnectionMutation,
+    onRollFailure: ConnectionMutation
+): ConnectionMutation = {
+    if (random.nextFloat() <= chanceToReassignWeight) {
+        onRollSuccess()
+    } else {
+        onRollFailure()
+    }
+}
+
+/**
+ * A configuration found on the web.
+ * https://github.com/GabrielTavernini/NeatJS/blob/master/src/connection.js#L12
+ */
+val NeatExperiment.mutateConnectionWeight
+    get() = ifElseRollConnectionMutation(
+        .05f,
+        assignConnectionRandomWeight(),
+        perturbConnectionWeight()
+    )
+
+fun uniformWeightPerturbation(connectionMutation: ConnectionMutation): Mutation = { neatMutator ->
+    neatMutator.connections.forEach { connection ->
+        connectionMutation(connection)
+    }
+}
+
 
 fun NeatExperiment.weightPerturbation(range: Float) = (random.nextFloat() * (range * 2)) - range
 

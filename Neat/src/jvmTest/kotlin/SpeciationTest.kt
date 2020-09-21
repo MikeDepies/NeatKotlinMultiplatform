@@ -5,8 +5,8 @@ import kotlin.random.*
 class SpeciationTest {
 
     fun test() {
-        .2f percentChanceToMutate uniformWeightPerturbation()
-        .5f percentChanceToMutate uniformWeightPerturbation()
+        .2f percentChanceToMutate { mutateConnectionWeight }
+//        .5f percentChanceToMutate uniformWeightPerturbation()
     }
 
     @Test
@@ -37,9 +37,10 @@ class SpeciationTest {
         var offspring = 0
         var newSkim = skim
         this.forEach { expectedOffSpring ->
-            val nTemp = expectedOffSpring.div(y1).toInt()
+            val expectedOffspringValue = expectedOffSpring.second
+            val nTemp = expectedOffspringValue.div(y1).toInt()
             offspring += nTemp
-            newSkim += expectedOffSpring - (nTemp * y1)
+            newSkim += expectedOffspringValue - (nTemp * y1)
             if (newSkim >= 1f) {
                 offspring += 1
                 newSkim -= 1f
@@ -48,8 +49,16 @@ class SpeciationTest {
         return Offspring(offspring, newSkim)
     }
 
-    private fun mutatePopulation(adjustedPopulationScore: List<AdjustedFitnessModel>) {
-        //average fitness per spcies?
+    private fun mutatePopulation(
+        adjustedPopulationScore: List<AdjustedFitnessModel>,
+        speciationController: SpeciationController
+    ) {
+        val modelScoreMap = adjustedPopulationScore.map {
+            it.second.model to ModelScore(fitness = it.second.score, adjustedFitness = it.first)
+        }.toMap()
+        speciationController.expectedChildrenInSpecies(modelScoreMap)
+//        fun
+        //fitness metric per species (top, average, etc)
         //compute expected number of offspring for each individual organism
         //  o -> o.adjustedFitness / populationAdjustedFitnessAverage
         //compute for species
@@ -85,7 +94,19 @@ class SpeciationTest {
 
 }
 
-typealias ExpectedOffSpring = Float
+private fun SpeciationController.expectedChildrenInSpecies(modelScoreMap: Map<NeatMutator, ModelScore>): Map<Species, List<ModelScore>> {
+    return speciesSet.map { species ->
+        species to getSpeciesPopulation(species).map { neatMutator ->
+            modelScoreMap.getValue(
+                neatMutator
+            )
+        }
+    }.toMap()
+}
+
+data class ModelScore(val fitness: Float, val adjustedFitness: Float)
+
+typealias ExpectedOffSpring = Pair<NeatMutator, Float>
 
 private fun XORTruthTable(): List<() -> Pair<List<Float>, List<Float>>> {
     return listOf(

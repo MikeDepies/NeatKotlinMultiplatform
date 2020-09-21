@@ -16,7 +16,8 @@ enum class NodeType {
     Input, Hidden, Output
 }
 
-data class Species(val id : Int)
+typealias Generations = Int
+data class Species(val id : Int, var age : Generations = 0)
 
 typealias EnvironmentQuery = () -> EnvironmentEntryElement
 typealias EnvironmentEntryElement = Pair<List<Float>, List<Float>>
