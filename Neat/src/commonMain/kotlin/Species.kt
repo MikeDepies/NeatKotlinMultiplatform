@@ -60,3 +60,5 @@ class SpeciationController(
 }
 
 typealias CompatibilityTest = (NeatMutator, NeatMutator) -> Boolean
+
+data class Species(val id : Int, var age : Generations = 0)

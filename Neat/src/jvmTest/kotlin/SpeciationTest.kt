@@ -2,11 +2,89 @@ import org.junit.Test
 import setup.*
 import kotlin.random.*
 
+val mutateConnections: Mutation = { neatMutator ->
+    neatMutator.connections.forEach { connectionGene ->
+        mutateConnectionWeight(connectionGene)
+    }
+}
+
 class SpeciationTest {
 
     fun test() {
-        .2f percentChanceToMutate { mutateConnectionWeight }
+
+        .2f chanceToMutate mutateConnections
+//        addConnection
+//        disableConnection
+//        addNode
+//        changeActivationFunction
 //        .5f percentChanceToMutate uniformWeightPerturbation()
+    }
+
+
+    inner class Epoch {
+//        fun
+    }
+
+
+    inner class AdjustFitness {
+        @Test
+        fun `neatmutator where age debt is present`() {
+            TODO()
+        }
+
+        @Test
+        fun `mark poor performing neatMutators`() {
+            TODO()
+        }
+
+        @Test
+        fun `number of parents`() {
+            val survivalThreshold = 0.5f
+            val numberOfOrganisms = 0
+            val expectedNumberOfParents = TODO()
+            //Decide how many get to reproduce based on survival_thresh*pop_size
+            //Adding 1.0 ensures that at least one will survive
+            // floor is the largest (closest to positive infinity) double value that is not greater
+            // than the argument and is equal to a mathematical integer
+
+
+            //Decide how many get to reproduce based on survival_thresh*pop_size
+            //Adding 1.0 ensures that at least one will survive
+            // floor is the largest (closest to positive infinity) double value that is not greater
+            // than the argument and is equal to a mathematical integer
+//num_parents = floor((Neat.p_survival_thresh * (size1 as Double)) + 1.0) as Int
+        }
+
+        @Test
+        fun `should have incurred age debt`() {
+            TODO()
+        }
+
+        @Test
+        fun `should not incur age debt`() {
+            TODO()
+        }
+
+        @Test
+        fun `age debt penalizes fitness greatly`() {
+            TODO()
+        }
+
+        @Test
+        fun `age significant paramater - boot fitness of younger species`() {
+            TODO()
+        }
+
+        @Test
+        fun `negative fitness is reassigned to nearly 0+`() {
+            TODO()
+        }
+
+        @Test
+        fun `plain adjusted fitness - no age debt - no youth boost`() {
+            TODO()
+        }
+
     }
 
     @Test
@@ -17,13 +95,14 @@ class SpeciationTest {
         val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
         val times = 100
         speciationController.speciate(population)
+        val adjustedFitness: AdjustedFitnessCalculation =
+            { it -> adjustedFitnessCalculation(population, it, df, sharingFunction) }
         repeat(times) {
             val setupEnvironment = setupEnvironment()
             val inputOutput = setupEnvironment.map { it() }
             val evaluatePopulation = evaluatePopulation(population, inputOutput)
             val adjustedPopulationScore = evaluatePopulation.map { fitnessModel ->
-                val adjustedFitness = adjustedFitnessCalculation(population, fitnessModel.first, df, sharingFunction)
-                fitnessModel.first.model to adjustedFitness
+                fitnessModel.first.model to adjustedFitness(fitnessModel.first)
             }.toMap()
             val fitnessForModel: (NeatMutator) -> Float = { adjustedPopulationScore.getValue(it) }
             speciationController.sortSpeciesByFitness(fitnessForModel)
