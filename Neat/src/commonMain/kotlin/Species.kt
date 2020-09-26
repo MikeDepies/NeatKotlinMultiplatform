@@ -8,10 +8,9 @@ class SpeciationController(
     private val speciesMap = mutableMapOf<Species, MutableSet<NeatMutator>>()
     fun nextSpecies(): Species = Species(speciesId++).also { speciesMap[it] = mutableSetOf() }
     fun speciate(population: List<NeatMutator>) {
-
         pruneSpeciesMap(population)
         population.forEach { neatMutator ->
-            compatibleSpecies(neatMutator, compatibilityTest).let { addSpecies(neatMutator, it) }
+            addSpecies(neatMutator, compatibleSpecies(neatMutator, compatibilityTest))
         }
 
     }
@@ -59,6 +58,15 @@ class SpeciationController(
     }
 }
 
+data class ModelScore(val neatMutator: NeatMutator, val fitness: Float, val adjustedFitness: Float)
+data class Species(val id: Int, var age: Generations = 0)
 typealias CompatibilityTest = (NeatMutator, NeatMutator) -> Boolean
+typealias SpeciesScoredMap = Map<Species, Collection<ModelScore>>
+typealias SpeciesMap = Map<Species, Collection<NeatMutator>>
+typealias SpeciesFitnessFunction = (Species) -> Float
 
-data class Species(val id : Int, var age : Generations = 0)
+fun speciesAverageFitness(speciesScoredMap: SpeciesScoredMap): SpeciesFitnessFunction =
+    { species -> speciesScoredMap.getValue(species).map { it.adjustedFitness }.average().toFloat() }
+
+fun speciesTopFitness(speciesScoredMap: SpeciesScoredMap): SpeciesFitnessFunction =
+    { species -> speciesScoredMap.getValue(species).first().adjustedFitness }

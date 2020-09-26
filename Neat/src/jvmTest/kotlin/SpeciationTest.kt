@@ -8,6 +8,17 @@ val mutateConnections: Mutation = { neatMutator ->
     }
 }
 
+val mutateAddConnection: Mutation = { mutateAddConnection(it) }
+val mutateDisableConnection: Mutation = { neatMutator ->
+    val activeConnections = neatMutator.connections.filter { it.enabled }
+    if (activeConnections.isNotEmpty()) {
+        val randomActiveConnection = activeConnections.random(random)
+        randomActiveConnection.enabled = false
+    }
+}
+val mutateAddNode: Mutation = { mutateAddNode(it) }
+
+//val mutateNodeActivationFunction : Mutation = { this. }
 class SpeciationTest {
 
     fun test() {
@@ -100,13 +111,13 @@ class SpeciationTest {
         repeat(times) {
             val setupEnvironment = setupEnvironment()
             val inputOutput = setupEnvironment.map { it() }
-            val evaluatePopulation = evaluatePopulation(population, inputOutput)
-            val adjustedPopulationScore = evaluatePopulation.map { fitnessModel ->
-                fitnessModel.first.model to adjustedFitness(fitnessModel.first)
-            }.toMap()
-            val fitnessForModel: (NeatMutator) -> Float = { adjustedPopulationScore.getValue(it) }
+            val evaluatePopulation = evaluatePopulation(population, inputOutput).map { it.first }.map { fitnessModel ->
+                ModelScore(fitnessModel.model, fitnessModel.score, adjustedFitness(fitnessModel))
+            }
+            val adjustedPopulationScore = evaluatePopulation.map {it.neatMutator to it}.toMap()
+            val fitnessForModel: (NeatMutator) -> Float = { adjustedPopulationScore.getValue(it).adjustedFitness }
             speciationController.sortSpeciesByFitness(fitnessForModel)
-//            mutatePopulation(adjustedPopulationScore)
+            mutatePopulation(evaluatePopulation, speciationController)
         }
     }
 
@@ -133,9 +144,11 @@ class SpeciationTest {
         speciationController: SpeciationController
     ) {
         val modelScoreMap = adjustedPopulationScore.map {
-            it.second.model to ModelScore(fitness = it.second.score, adjustedFitness = it.first)
+            it.neatMutator to it
         }.toMap()
-        speciationController.expectedChildrenInSpecies(modelScoreMap)
+
+        val speciesMap = speciationController.speciesMap(modelScoreMap)
+        val speciesTopFitness = speciesTopFitness(speciesMap)
 //        fun
         //fitness metric per species (top, average, etc)
         //compute expected number of offspring for each individual organism
@@ -173,17 +186,19 @@ class SpeciationTest {
 
 }
 
-private fun SpeciationController.expectedChildrenInSpecies(modelScoreMap: Map<NeatMutator, ModelScore>): Map<Species, List<ModelScore>> {
-    return speciesSet.map { species ->
-        species to getSpeciesPopulation(species).map { neatMutator ->
-            modelScoreMap.getValue(
-                neatMutator
-            )
+private fun SpeciationController.speciesMap(modelScoreMap: Map<NeatMutator, ModelScore>): SpeciesScoredMap {
+    fun speciesPopulation(species: Species): List<ModelScore> {
+        return getSpeciesPopulation(species).map { neatMutator ->
+            modelScoreMap.getValue(neatMutator)
         }
+    }
+
+    return speciesSet.map { species ->
+        species to speciesPopulation(species)
     }.toMap()
 }
 
-data class ModelScore(val fitness: Float, val adjustedFitness: Float)
+
 
 typealias ExpectedOffSpring = Pair<NeatMutator, Float>
 
@@ -207,10 +222,6 @@ enum class OperationMode {
     BatchSequential, AssemblySequential
 }
 
-fun t() {
-
-    listOf(1, 5, 3).perform({ }, {}, operationMode = OperationMode.BatchSequential)
-}
 
 fun <T, K> List<T>.perform(
     vararg operations: Operation<T, K>,

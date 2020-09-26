@@ -4,7 +4,7 @@ typealias Generations = Int
 
 typealias EnvironmentQuery = () -> EnvironmentEntryElement
 typealias EnvironmentEntryElement = Pair<List<Float>, List<Float>>
-typealias AdjustedFitnessModel = Pair<Float, FitnessModel<NeatMutator>>
+typealias AdjustedFitnessModel = ModelScore
 
 data class FitnessModel<T>(val model: T, val score: Float)
 
