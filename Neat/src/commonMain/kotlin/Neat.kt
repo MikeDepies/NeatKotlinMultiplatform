@@ -4,7 +4,6 @@ typealias Generations = Int
 
 typealias EnvironmentQuery = () -> EnvironmentEntryElement
 typealias EnvironmentEntryElement = Pair<List<Float>, List<Float>>
-typealias AdjustedFitnessModel = ModelScore
 
 data class FitnessModel<T>(val model: T, val score: Float)
 
@@ -18,6 +17,7 @@ fun neatMutator(
 ): NeatMutator {
     val simpleNeatMutator = SimpleNeatMutator(listOf(), listOf())
     var nodeNumber = 0
+    var innovation = 0
     repeat(inputNumber) {
         simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Input, identity()))
     }
@@ -26,7 +26,6 @@ fun neatMutator(
     repeat(outputNumber) {
         simpleNeatMutator.addNode(NodeGene(nodeNumber++, NodeType.Output, function))
     }
-    var innovation = 0
     for (input in simpleNeatMutator.inputNodes) {
 //        val weight = random.nextFloat();
         for (output in simpleNeatMutator.outputNodes) {

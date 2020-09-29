@@ -58,3 +58,13 @@ interface ActivatableNetwork {
     fun evaluate(input: List<Float>, bias : Boolean = false) : Unit
     fun output(): List<Float>
 }
+
+fun NeatMutator.toNetwork(): ActivatableNetwork {
+    val idNodeMap = nodes.map { it.node to it }.toMap()
+    val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f, 0f) }.toMap()
+    val inputNodeSet = inputNodes.mapNotNull { networkNodeMap[it] }
+    val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
+    val computationStrategy: ComputationStrategy = getComputationStrategy(networkNodeMap, idNodeMap)
+
+    return SimpleActivatableNetwork(inputNodeSet, outputNodeSet, computationStrategy)
+}

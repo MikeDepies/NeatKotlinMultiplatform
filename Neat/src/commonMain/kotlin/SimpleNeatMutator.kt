@@ -2,6 +2,9 @@ class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGen
     private val _connectableNodes = resolvePotentialConnections(_nodes, _connections).toMutableList()
 
 
+    override fun clone(): NeatMutator {
+        return SimpleNeatMutator(nodes.map { it.copy() }, connections.map { it.copy() })
+    }
 
     private fun resolvePotentialConnections(
         _nodes: List<NodeGene>,

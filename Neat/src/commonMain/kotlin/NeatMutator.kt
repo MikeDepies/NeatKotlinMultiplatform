@@ -11,4 +11,5 @@ interface NeatMutator {
     fun addNode(node: NodeGene)
     fun connectionsTo(first: NodeGene): List<ConnectionGene>
     fun connectionsFrom(first: NodeGene): List<ConnectionGene>
+    fun clone() : NeatMutator
 }

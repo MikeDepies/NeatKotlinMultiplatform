@@ -1,34 +1,18 @@
+import mutation.*
 import org.junit.Test
-import setup.*
-import kotlin.random.*
+import kotlin.random.Random
 
-val mutateConnections: Mutation = { neatMutator ->
-    neatMutator.connections.forEach { connectionGene ->
-        mutateConnectionWeight(connectionGene)
-    }
-}
 
-val mutateAddConnection: Mutation = { mutateAddConnection(it) }
-val mutateDisableConnection: Mutation = { neatMutator ->
-    val activeConnections = neatMutator.connections.filter { it.enabled }
-    if (activeConnections.isNotEmpty()) {
-        val randomActiveConnection = activeConnections.random(random)
-        randomActiveConnection.enabled = false
-    }
-}
-val mutateAddNode: Mutation = { mutateAddNode(it) }
-
-//val mutateNodeActivationFunction : Mutation = { this. }
+//val mutation.mutateNodeActivationFunction : mutation.Mutation = { this. }
 class SpeciationTest {
 
     fun test() {
-
         .2f chanceToMutate mutateConnections
 //        addConnection
 //        disableConnection
 //        addNode
 //        changeActivationFunction
-//        .5f percentChanceToMutate uniformWeightPerturbation()
+//        .5f percentChanceToMutate mutation.uniformWeightPerturbation()
     }
 
 
@@ -98,9 +82,29 @@ class SpeciationTest {
 
     }
 
+    fun mutationDictionary(activationFunctions: List<ActivationFunction>): List<MutationEntry> {
+        return listOf(
+            .5f chanceToMutate mutateConnections,
+            .2f chanceToMutate mutateAddNode,
+            .2f chanceToMutate mutateAddConnection,
+            .1f chanceToMutate mutatePerturbBiasConnections(),
+            .1f chanceToMutate mutateDisableConnection,
+            .1f chanceToMutate mutateNodeActivationFunction(activationFunctions),
+
+            )
+    }
+
     @Test
     fun process() {
+
         var population: List<NeatMutator> = generateInitialPopulation(Random(0), 100)
+        val node = population.first().lastNode.node
+        val innovation = population.first().connections.last().innovation
+        val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
+        val simpleNeatExperiment =
+            simpleNeatExperiment(Random(0), innovation, node, activationFunctions)
+        val mutationEntries = mutationDictionary(activationFunctions)
+        val size = population.size
         val df: DeltaFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
         val sharingFunction = shFunction(3f)
         val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
@@ -108,108 +112,97 @@ class SpeciationTest {
         speciationController.speciate(population)
         val adjustedFitness: AdjustedFitnessCalculation =
             { it -> adjustedFitnessCalculation(population, it, df, sharingFunction) }
+
+
+
         repeat(times) {
             val setupEnvironment = setupEnvironment()
             val inputOutput = setupEnvironment.map { it() }
-            val evaluatePopulation = evaluatePopulation(population, inputOutput).map { it.first }.map { fitnessModel ->
-                ModelScore(fitnessModel.model, fitnessModel.score, adjustedFitness(fitnessModel))
-            }
-            val adjustedPopulationScore = evaluatePopulation.map {it.neatMutator to it}.toMap()
+            val modelScoreList =
+                speciationController.evaluatePopulation(population, inputOutput).map { it.first }.map { fitnessModel ->
+                    ModelScore(fitnessModel.model, fitnessModel.score, adjustedFitness(fitnessModel))
+                }
+            val adjustedPopulationScore = modelScoreList.map { it.neatMutator to it }.toMap()
             val fitnessForModel: (NeatMutator) -> Float = { adjustedPopulationScore.getValue(it).adjustedFitness }
             speciationController.sortSpeciesByFitness(fitnessForModel)
-            mutatePopulation(evaluatePopulation, speciationController)
+//            speciationController.mutatePopulation(modelScoreList)
+
+            val overallAverageFitness = modelScoreList.map { it.adjustedFitness }.average()
+
+            val speciesReport = speciationController.speciesReport(modelScoreList, overallAverageFitness)
+            population = speciationController.reproduce(
+                mutationEntries,
+                simpleNeatExperiment,
+                speciesReport
+            )
+
+//            population = listOf()
         }
     }
 
-    data class Offspring(val offspring: Int, val skim: Double)
-
-    fun List<ExpectedOffSpring>.countOffspring(skim: Double, y1: Float = 1f): Offspring {
-        var offspring = 0
-        var newSkim = skim
-        this.forEach { expectedOffSpring ->
-            val expectedOffspringValue = expectedOffSpring.second
-            val nTemp = expectedOffspringValue.div(y1).toInt()
-            offspring += nTemp
-            newSkim += expectedOffspringValue - (nTemp * y1)
-            if (newSkim >= 1f) {
-                offspring += 1
-                newSkim -= 1f
+    //species reproduce
+    //iterate for the number of expected children of given species
+    //handle "super champions" inside the species population
+    //  these get special handling for how they are brought forward
+    //Then with remaining slots (expectedChildren -numberOfSuperChamps)
+    //check if remaining is > 5 - ifso bring clone the champion w/o mutation and bring forward
+    //if (mutateOnly roll || poolsize == 1)
+    //else mate two models & mutate
+    fun SpeciationController.reproduce(
+        mutationEntries: List<MutationEntry>,
+        neatExperiment: NeatExperiment,
+        speciesReport: SpeciesReport
+    ): List<NeatMutator> {
+        val probabilityToMate = rollFrom(.3f)
+        fun mutateModel(neatMutator: NeatMutator) {
+            mutationEntries.forEach { mutationEntry ->
+                mutationEntry.mutate(neatExperiment, neatMutator)
             }
         }
-        return Offspring(offspring, newSkim)
-    }
 
-    private fun mutatePopulation(
-        adjustedPopulationScore: List<AdjustedFitnessModel>,
-        speciationController: SpeciationController
-    ) {
-        val modelScoreMap = adjustedPopulationScore.map {
-            it.neatMutator to it
-        }.toMap()
+        speciesSet.forEach { species ->
+            val speciesPopulation = speciesReport.speciesMap.getValue(species)
+            val offspring = speciesReport.speciesOffspringMap.getValue(species)
 
-        val speciesMap = speciationController.speciesMap(modelScoreMap)
-        val speciesTopFitness = speciesTopFitness(speciesMap)
-//        fun
-        //fitness metric per species (top, average, etc)
-        //compute expected number of offspring for each individual organism
-        //  o -> o.adjustedFitness / populationAdjustedFitnessAverage
-        //compute for species
-        //check if speciesOffspringExpected is less than total organisms (for experiment[?])
-        //      give the difference between expected and total organisms - in new "organisms" to that species to refill the population]
-        //Handle where population gets killed of by stagnation + add age to species
-
-
-        TODO("Not yet implemented")
-    }
-
-    private fun evaluatePopulation(
-        population: List<NeatMutator>,
-        inputOutput: List<EnvironmentEntryElement>
-    ): List<Pair<FitnessModel<NeatMutator>, ActivatableNetwork>> {
-        return population.map { neatMutator ->
-            val network = neatMutator.toNetwork()
-            val score = inputOutput.map {
-                network.evaluate(it.first, true)
-                if (network.output() == it.second) 1f else 0f
-            }.sum()
-            FitnessModel(neatMutator, score) to network
+            repeat(offspring) {
+                val newOffspring = newOffspring(probabilityToMate, neatExperiment, speciesPopulation)
+                mutateModel(newOffspring)
+            }
         }
+
+
+        TODO()
     }
+
 
     private fun setupEnvironment(): List<EnvironmentQuery> {
         return XORTruthTable()
     }
 
-    private fun generateInitialPopulation(random: Random, populationSize: Int): List<NeatMutator> {
-        return (0 until populationSize).map { neatMutator(3, 1, random, sigmoidalTransferFunction) }
-    }
-
 }
 
-private fun SpeciationController.speciesMap(modelScoreMap: Map<NeatMutator, ModelScore>): SpeciesScoredMap {
-    fun speciesPopulation(species: Species): List<ModelScore> {
-        return getSpeciesPopulation(species).map { neatMutator ->
-            modelScoreMap.getValue(neatMutator)
+private fun newOffspring(
+    probabilityToMate: MutationRoll,
+    neatExperiment: NeatExperiment,
+    speciesPopulation: Collection<ModelScore>
+): NeatMutator {
+    return when {
+        probabilityToMate(neatExperiment) && speciesPopulation.size > 1 -> {
+            val randomParent1 = speciesPopulation.random(neatExperiment.random)
+            val randomParent2 = (speciesPopulation - randomParent1).random(neatExperiment.random)
+            neatExperiment.crossover(
+                FitnessModel(randomParent1.neatMutator, randomParent1.adjustedFitness),
+                FitnessModel(randomParent2.neatMutator, randomParent2.adjustedFitness)
+            )
         }
+        else -> speciesPopulation.random(neatExperiment.random).neatMutator.clone()
     }
-
-    return speciesSet.map { species ->
-        species to speciesPopulation(species)
-    }.toMap()
 }
 
-
-
-typealias ExpectedOffSpring = Pair<NeatMutator, Float>
-
-private fun XORTruthTable(): List<() -> Pair<List<Float>, List<Float>>> {
-    return listOf(
-        { listOf(0f, 0f) to listOf(0f) },
-        { listOf(0f, 1f) to listOf(0f) },
-        { listOf(1f, 0f) to listOf(1f) },
-        { listOf(1f, 1f) to listOf(1f) },
-    )
+private fun generateInitialPopulation(random: Random, populationSize: Int): List<NeatMutator> {
+    return (0 until populationSize).map { neatMutator(3, 1, random, sigmoidalTransferFunction) }
 }
+
 
 private fun standardCompatibilityTest(
     sharingFunction: SharingFunction,
@@ -222,13 +215,22 @@ enum class OperationMode {
     BatchSequential, AssemblySequential
 }
 
+//
+//fun <T, K> List<T>.perform(
+//    vararg operations: Operation<T, K>,
+//    operationMode: OperationMode = OperationMode.AssemblySequential
+//) {
+//    when (operationMode) {
+//        OperationMode.BatchSequential -> operations.forEach { op -> forEach { item -> op(item) } }
+//        OperationMode.AssemblySequential -> forEach { item -> operations.forEach { op -> op(item) } }
+//    }
+//}
 
-fun <T, K> List<T>.perform(
-    vararg operations: Operation<T, K>,
-    operationMode: OperationMode = OperationMode.AssemblySequential
-) {
-    when (operationMode) {
-        OperationMode.BatchSequential -> operations.forEach { op -> forEach { item -> op(item) } }
-        OperationMode.AssemblySequential -> forEach { item -> operations.forEach { op -> op(item) } }
-    }
+private fun XORTruthTable(): List<() -> Pair<List<Float>, List<Float>>> {
+    return listOf(
+        { listOf(0f, 0f) to listOf(0f) },
+        { listOf(0f, 1f) to listOf(0f) },
+        { listOf(1f, 0f) to listOf(1f) },
+        { listOf(1f, 1f) to listOf(1f) },
+    )
 }

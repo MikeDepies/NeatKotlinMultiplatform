@@ -4,8 +4,7 @@ fun simpleNeatExperiment(
     random: Random,
     innovation: Int,
     nodeInnovation: Int,
-    activationFunctions: List<ActivationFunction>,
-    speciesId: Int
+    activationFunctions: List<ActivationFunction>
 ): NeatExperiment {
     return SimpleNeatExperiment(innovation, nodeInnovation, activationFunctions, random)
 }
