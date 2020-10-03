@@ -15,7 +15,7 @@ fun neatMutator(
     random: Random = Random,
     function: ActivationFunction = Identity
 ): NeatMutator {
-    val simpleNeatMutator = SimpleNeatMutator(listOf(), listOf())
+    val simpleNeatMutator = simpleNeatMutator(listOf(), listOf())
     var nodeNumber = 0
     var innovation = 0
     repeat(inputNumber) {

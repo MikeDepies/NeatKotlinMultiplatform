@@ -1,3 +1,4 @@
+import kotlin.jvm.JvmName
 import kotlin.random.*
 
 fun simpleNeatExperiment(
@@ -30,32 +31,46 @@ class SimpleNeatExperiment(
 //    private var nodeInnovation = nodeInnovation
 //    override val random: Random get() = random
 
+    fun connectionGene(potentialConnection: PotentialConnection): ConnectionGene {
+        val (sourceNode, targetNode, type) = potentialConnection
+        return when (type) {
+            ConnectionType.UniDirectional -> connectionGene(sourceNode, targetNode)
+            ConnectionType.BiDirectional -> when (random.nextBoolean()) {
+                true -> connectionGene(sourceNode, targetNode)
+                false -> connectionGene(targetNode, sourceNode)
+            }
+        }
+    }
+
+    private fun connectionGene(sourceNode: Int, targetNode: Int): ConnectionGene {
+        return ConnectionGene(
+            sourceNode,
+            targetNode,
+            randomWeight(random),
+            true,
+            nextInnovation()
+        )
+    }
 
     override fun mutateAddConnection(neatMutator: NeatMutator) {
-        val (sourceNode, targetNode) = neatMutator.connectableNodes.random(random)
-        neatMutator.addConnection(
-            ConnectionGene(
-                sourceNode,
-                targetNode,
-                randomWeight(random),
-                true,
-                nextInnovation()
-            )
-        )
+        val potentialConnection = neatMutator.connectableNodes.random(random)
+        neatMutator.addConnection(connectionGene(potentialConnection))
     }
 
     override fun mutateAddNode(neatMutator: NeatMutator) {
         val randomConnection = neatMutator.connections.random(random)
-        val node = NodeGene(nextInnovation(), NodeType.Hidden, activationFunctions.random(random))
+        val node = NodeGene(nextNode(), NodeType.Hidden, activationFunctions.random(random))
         val copiedConnection = randomConnection.copy(innovation = nextInnovation(), inNode = node.node)
         val newEmptyConnection = ConnectionGene(randomConnection.inNode, node.node, 1f, true, nextInnovation())
+        println("\tMUTATE ADD NODE")
+        println("\t${neatMutator.connections.condensedString()}\t${neatMutator.nodes.condensedString()}")
         randomConnection.enabled = false
         neatMutator.apply {
             addNode(node)
             addConnection(copiedConnection)
             addConnection(newEmptyConnection)
         }
-
+        println("\t${neatMutator.connections.condensedString()}\t${neatMutator.nodes.condensedString()}")
     }
 
     override fun nextInnovation(): Int {
@@ -82,13 +97,25 @@ class SimpleNeatExperiment(
             }
         }.map { it.copy() }
         val nodes = if (parent1.isMoreFitThan(parent2)) parent1.model.nodes else parent2.model.nodes
-        return SimpleNeatMutator(nodes, offSpringConnections)
+        return simpleNeatMutator(nodes.toList(), offSpringConnections.toList())
     }
-
 
 
 }
 
 fun NeatExperiment.newNode(activationFunction: ActivationFunction): NodeGene {
     return NodeGene(nextNode(), NodeType.Hidden, activationFunction)
+}
+
+fun List<ConnectionGene>.condensedString(): String {
+    fun enabled(connectionGene: ConnectionGene) = if (connectionGene.enabled) "" else "!"
+    fun weight(it: ConnectionGene) = "= ${it.weight}"
+
+    return joinToString("\t") { "${enabled(it)}[${it.inNode},${it.outNode}]" }
+}
+
+
+@JvmName("condensedNodeGeneString")
+fun List<NodeGene>.condensedString(): String {
+    return "[${joinToString(", ") { "${it.node}" }}]"
 }

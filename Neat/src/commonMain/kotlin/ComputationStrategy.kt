@@ -27,6 +27,7 @@ fun NeatMutator.computationSequence(
                 connectionsFrom(node)
             }
 
+            val model = this@computationSequence
             val nextNodeMap = connections.groupBy { idNodeMap.getValue(it.outNode) }
             val fn = {
                 capturedSet.activate(networkNodeMap)

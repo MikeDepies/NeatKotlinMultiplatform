@@ -1,9 +1,19 @@
-class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGene>) : NeatMutator {
-    private val _connectableNodes = resolvePotentialConnections(_nodes, _connections).toMutableList()
+fun simpleNeatMutator(nodes: List<NodeGene>, connections: List<ConnectionGene>): SimpleNeatMutator {
+    return SimpleNeatMutator(nodes.toMutableList(), connections.toMutableList())
+}
+
+data class SimpleNeatMutator(
+    override val nodes: MutableList<NodeGene>,
+    override val connections: MutableList<ConnectionGene>
+) : NeatMutator {
+    private val _connectableNodes = resolvePotentialConnections(nodes, connections).toMutableList()
 
 
     override fun clone(): NeatMutator {
-        return SimpleNeatMutator(nodes.map { it.copy() }, connections.map { it.copy() })
+        return copy(
+            nodes = nodes.map { it.copy() }.toMutableList(),
+            connections = connections.map { it.copy() }.toMutableList()
+        )
     }
 
     private fun resolvePotentialConnections(
@@ -14,13 +24,13 @@ class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGen
             eligibleNodes(_nodes, sourceNode).map { targetNode ->
                 PotentialConnection(sourceNode.node, targetNode.node)
             }
-        }.filter { it.alreadyConnected(_connections) }
+        }.filterNot { it.alreadyConnected(_connections) }
     }
 
     private fun eligibleNodes(
         _nodes: List<NodeGene>,
         sourceNode: NodeGene
-    ) = _nodes.filterNot {
+    ): List<NodeGene> = _nodes.filterNot {
         val bothAreOutputs = bothAreOutputNodes(sourceNode, it)
         val bothAreInputs = bothAreInputs(sourceNode, it)
         bothAreInputs || bothAreOutputs
@@ -32,8 +42,6 @@ class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGen
     private fun bothAreOutputNodes(sourceNode: NodeGene, it: NodeGene) =
         sourceNode.nodeType == NodeType.Output && it.nodeType == NodeType.Output
 
-    override val nodes = _nodes.toMutableList()
-    override val connections = _connections.toMutableList()
     override val hiddenNodes: List<NodeGene>
         get() = nodes.filter { it.nodeType == NodeType.Hidden }
     override val outputNodes: List<NodeGene>
@@ -53,14 +61,18 @@ class SimpleNeatMutator(_nodes: List<NodeGene>, _connections: List<ConnectionGen
         if (connections.any { it.inNode == connectionGene.inNode && it.outNode == connectionGene.outNode })
             error("Can not add a connection gene between already connected nodes")
         connections += connectionGene
-        _connectableNodes -= PotentialConnection(connectionGene.inNode, connectionGene.outNode)
+//        _connectableNodes -= PotentialConnection(connectionGene.inNode, connectionGene.outNode)
+        _connectableNodes.clear()
+        _connectableNodes.addAll(resolvePotentialConnections(nodes, connections))
     }
 
     override fun addNode(node: NodeGene) {
         nodes += node
-        eligibleNodes(nodes, node).forEach {
-            _connectableNodes.add(PotentialConnection(node.node, it.node))
-        }
+        _connectableNodes.clear()
+        _connectableNodes.addAll(resolvePotentialConnections(nodes, connections))
+//        eligibleNodes(nodes, node).forEach {
+//            _connectableNodes.add(PotentialConnection(node.node, it.node))
+//        }
     }
 
     override fun connectionsTo(first: NodeGene): List<ConnectionGene> {

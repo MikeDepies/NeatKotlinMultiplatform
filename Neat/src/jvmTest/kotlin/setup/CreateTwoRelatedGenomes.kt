@@ -5,7 +5,7 @@ import Identity
 import NeatMutator
 import NodeGene
 import NodeType
-import SimpleNeatMutator
+import simpleNeatMutator
 import randomWeight
 import kotlin.random.*
 
@@ -52,7 +52,7 @@ fun createTwoRelatedGenomes(random: Random): CrossOverCandidate {
         ConnectionGene(1, 6, weight(), true, 10)
     )
     return CrossOverCandidate(
-        SimpleNeatMutator(nodeGenes1, connectionGenes1),
-        SimpleNeatMutator(nodeGenes2, connectionGenes2)
+        simpleNeatMutator(nodeGenes1, connectionGenes1),
+        simpleNeatMutator(nodeGenes2, connectionGenes2)
     )
 }
