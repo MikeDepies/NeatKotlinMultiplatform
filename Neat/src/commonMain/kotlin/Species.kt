@@ -124,3 +124,79 @@ fun totalOffspring(
     }
     return totalOffspring
 }
+
+
+
+fun populateNextGeneration(
+    speciationController: SpeciationController,
+    modelScoreList: List<ModelScore>,
+    mutationEntries: List<MutationEntry>,
+    simpleNeatExperiment: NeatExperiment
+): List<NeatMutator> {
+    return speciationController.reproduce(
+        simpleNeatExperiment,
+        speciationController.speciesReport(modelScoreList),
+        offspringFunction(0f, mutationEntries)
+    ).values.flatten()
+}
+
+
+fun SpeciationController.reproduce(
+    neatExperiment: NeatExperiment,
+    speciesReport: SpeciesReport,
+    offspringFunction: OffspringFunction
+): SpeciesMap {
+    return speciesSet.map { species ->
+        val speciesPopulation = speciesReport.speciesMap.getValue(species)
+        val offspring = speciesReport.speciesOffspringMap.getValue(species)
+        val newGenerationPopulation = (0 until offspring).map {
+            offspringFunction(neatExperiment, speciesPopulation)
+        }
+        species to newGenerationPopulation
+    }.toMap()
+}
+
+fun offspringFunction(chance: Float, mutationEntries: List<MutationEntry>): OffspringFunction {
+    val probabilityToMate = rollFrom(chance)
+    return { modelScoreList ->
+        newOffspring(
+            probabilityToMate,
+            this,
+            modelScoreList
+        ).mutateModel(mutationEntries, this)
+    }
+}
+
+fun SpeciationController.speciesReport(modelScoreList: List<ModelScore>): SpeciesReport {
+    val overallAverageFitness = modelScoreList.map { modelScore -> modelScore.adjustedFitness }.average()
+    return calculateSpeciesReport(modelScoreList, overallAverageFitness)
+
+}
+
+
+private fun newOffspring(
+    probabilityToMate: MutationRoll,
+    neatExperiment: NeatExperiment,
+    speciesPopulation: Collection<ModelScore>
+): NeatMutator {
+    return when {
+        probabilityToMate(neatExperiment) && speciesPopulation.size > 1 -> {
+            val randomParent1 = speciesPopulation.random(neatExperiment.random)
+            val randomParent2 = (speciesPopulation - randomParent1).random(neatExperiment.random)
+            println("mate")
+            neatExperiment.crossover(
+                FitnessModel(randomParent1.neatMutator, randomParent1.adjustedFitness),
+                FitnessModel(randomParent2.neatMutator, randomParent2.adjustedFitness)
+            )
+        }
+        else -> speciesPopulation.random(neatExperiment.random).neatMutator.clone()//.also { println("clone") }
+    }
+}
+
+fun NeatMutator.mutateModel(mutationEntries: List<MutationEntry>, neatExperiment: NeatExperiment): NeatMutator {
+    mutationEntries.forEach { mutationEntry ->
+        mutationEntry.mutate(neatExperiment, this)
+    }
+    return this
+}
+typealias OffspringFunction = NeatExperiment.(Collection<ModelScore>) -> NeatMutator

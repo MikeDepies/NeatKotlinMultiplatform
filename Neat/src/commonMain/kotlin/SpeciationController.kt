@@ -51,20 +51,20 @@ class SpeciationController(
     fun species(neatMutator: NeatMutator) = neatMutatorToSpeciesMap.getValue(neatMutator)
 
 
-    fun evaluatePopulation(
-        population: List<NeatMutator>,
-        inputOutput: List<EnvironmentEntryElement>
-    ): List<Pair<FitnessModel<NeatMutator>, ActivatableNetwork>> {
-        return population.map { neatMutator ->
-            val network = neatMutator.toNetwork()
-            val score = inputOutput.map {
-                network.evaluate(it.first, true)
-                if (network.output().map { it.roundToInt().toFloat() } == it.second) 1f else 0f
-            }.sum()
-            FitnessModel(neatMutator, score) to network
-        }
-    }
+
 
 }
 
-
+fun evaluatePopulation(
+    population: List<NeatMutator>,
+    inputOutput: List<EnvironmentEntryElement>
+): List<FitnessModel<NeatMutator>> {
+    return population.map { neatMutator ->
+        val network = neatMutator.toNetwork()
+        val score = inputOutput.map {
+            network.evaluate(it.first, true)
+            if (network.output().map { it.roundToInt().toFloat() } == it.second) 1f else 0f
+        }.sum()
+        FitnessModel(neatMutator, score)
+    }
+}
