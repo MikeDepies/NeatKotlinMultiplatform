@@ -4,12 +4,11 @@ import kotlin.random.*
 fun connectNodes(nodeSource: NodeGene, nodeTarget: NodeGene, weight: Float, innovation: Int): ConnectionGene {
     return ConnectionGene(nodeSource.node, nodeTarget.node, weight, true, innovation)
 }
-
-fun excess(parent1: NeatMutator, parent2: NeatMutator): List<ConnectionGene> {
+fun excess(parent1: NeatMutator, parent2: NeatMutator): ExcessResult {
     val lastSharedInnovation = min(lastInnovation(parent1), lastInnovation(parent2))
     fun genesAfterInnovation(neatMutator: NeatMutator) =
         neatMutator.connections.filter { it.innovation > lastSharedInnovation }
-    return genesAfterInnovation(parent1) + genesAfterInnovation(parent2)
+    return ExcessResult(genesAfterInnovation(parent1), genesAfterInnovation(parent2))
 }
 
 fun disjoint(parent1: NeatMutator, parent2: NeatMutator): DisjointResult {
@@ -17,7 +16,7 @@ fun disjoint(parent1: NeatMutator, parent2: NeatMutator): DisjointResult {
     fun findDisjointedNodes(parent1: NeatMutator, parent2: NeatMutator): List<ConnectionGene> {
         return parent1.connections
             .filter { c1 ->
-                val noMatchingInnovation = parent2.connections.none { c2 -> c1.innovation == c2.innovation }
+                val noMatchingInnovation = !parent2.hasConnection(c1.innovation)
                 c1.innovation <= lastSharedInnovation && noMatchingInnovation
             }
     }
@@ -29,7 +28,7 @@ fun disjoint(parent1: NeatMutator, parent2: NeatMutator): DisjointResult {
 
 data class DisjointResult(val disjoint1: List<ConnectionGene>, val disjoint2: List<ConnectionGene>)
 data class ExcessResult(val excess1: List<ConnectionGene>, val excess2: List<ConnectionGene>)
-
+fun ExcessResult.size() = max(excess1.size, excess2.size)
 fun compatibilityDifference(
     excess: Int,
     disjoint: Int,
@@ -60,7 +59,7 @@ interface ActivatableNetwork {
 }
 
 fun NeatMutator.toNetwork(): ActivatableNetwork {
-    val idNodeMap = nodes.map { it.node to it }.toMap()
+    val idNodeMap = nodes.toMap { it.node }
     val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f, 0f) }.toMap()
     val inputNodeSet = inputNodes.mapNotNull { networkNodeMap[it] }
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }

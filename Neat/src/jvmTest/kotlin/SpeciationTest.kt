@@ -1,33 +1,17 @@
-import mutation.mutateAddConnection
-import mutation.mutateAddNode
-import mutation.mutateConnections
-import mutation.mutateToggleConnection
 import org.junit.Test
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 class SpeciationTest {
 
-    private fun mutationDictionary(activationFunctions: List<ActivationFunction>): List<MutationEntry> {
-        return listOf(
-            .3f chanceToMutate mutateConnections,
-            .04f chanceToMutate mutateAddNode,
-            .1f chanceToMutate mutateAddConnection,
-//            .1f chanceToMutate mutatePerturbBiasConnections(),
-            .11f chanceToMutate mutateToggleConnection,
-//            .1f chanceToMutate mutateNodeActivationFunction(activationFunctions),
-
-        )
-    }
-
     @Test
     fun process() {
         val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
         val mutationEntries = mutationDictionary(activationFunctions)
-        val df: DeltaFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
+        val df: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
         val sharingFunction = shFunction(3f)
         val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
-        val population: List<NeatMutator> = simpleNeatExperiment.generateInitialPopulation(6)
+        val population = simpleNeatExperiment.generateInitialPopulation(6)
 
         val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
         val adjustedFitness = adjustedFitnessCalculation(speciationController, df, sharingFunction)
@@ -44,7 +28,7 @@ class SpeciationTest {
 
             sortModelsByAdjustedFitness(speciationController, modelScoreList)
             val newPopulation =
-                populateNextGeneration(speciationController, modelScoreList, mutationEntries, simpleNeatExperiment)
+                populateNextGeneration(speciationController, modelScoreList, mutationEntries, simpleNeatExperiment, 1f)
             speciationController.speciate(newPopulation, speciesLineage, generation)
             speciesScoreKeeper.updateScores(modelScoreList.map { speciationController.species(it.neatMutator) to it })
         }
@@ -63,9 +47,6 @@ class SpeciationTest {
     }
 }
 
-private fun setupEnvironment(): List<EnvironmentQuery> {
-    return XORTruthTable()
-}
 
 private fun sortModelsByAdjustedFitness(
     speciationController: SpeciationController,
@@ -91,34 +72,4 @@ private fun evaluateAndDisplayBestSpecies(speciesScoreKeeper: SpeciesScoreKeeper
         if (roundedActual == it.second) 1f else 0f
     }.sum()
     println(score)
-}
-
-private fun adjustedFitnessCalculation(
-    speciationController: SpeciationController,
-    df: DeltaFunction,
-    sharingFunction: SharingFunction
-): AdjustedFitnessCalculation =
-    { it -> adjustedFitnessCalculation(speciationController.population(), it, df, sharingFunction) }
-
-private fun NeatExperiment.generateInitialPopulation(populationSize: Int): List<NeatMutator> {
-    val neatMutator = createNeatMutator(3, 1, random, sigmoidalTransferFunction)
-    return (0 until populationSize).map {
-        val clone = neatMutator.clone()
-        mutateConnections(this, clone)
-        clone
-    }
-}
-
-private fun standardCompatibilityTest(
-    sharingFunction: SharingFunction,
-    df: DeltaFunction
-): CompatibilityTest = { neat1, neat2 -> sharingFunction(df(neat1, neat2)) == 1 }
-
-private fun XORTruthTable(): List<() -> Pair<List<Float>, List<Float>>> {
-    return listOf(
-        { listOf(0f, 0f) to listOf(0f) },
-        { listOf(0f, 1f) to listOf(0f) },
-        { listOf(1f, 0f) to listOf(1f) },
-        { listOf(1f, 1f) to listOf(1f) },
-    )
 }

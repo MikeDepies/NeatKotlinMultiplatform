@@ -23,8 +23,11 @@ class SpeciesScoreKeeper {
     fun getModelScore(species: Species?) = scoreMap[species]
     fun updateScores(modelScores: List<Pair<Species, ModelScore>>) {
         modelScores.forEach { (species, modelScore) ->
-            if (scoreMap.containsKey(species) && modelScore.adjustedFitness > scoreMap.getValue(species).adjustedFitness) {
-                scoreMap[species] = modelScore
+            if (scoreMap.containsKey(species)) {
+                if (modelScore.fitness > scoreMap.getValue(species).fitness) {
+                    println("update $species - ${modelScore.fitness} > ${scoreMap.getValue(species).fitness}")
+                    scoreMap[species] = modelScore
+                }
             } else {
                 scoreMap[species] = modelScore
             }
@@ -32,7 +35,7 @@ class SpeciesScoreKeeper {
     }
 
     fun bestSpecies(): Species? {
-        return scoreMap.maxByOrNull { it.value.adjustedFitness }?.key
+        return scoreMap.maxByOrNull { it.value.fitness }?.key
     }
 }
 

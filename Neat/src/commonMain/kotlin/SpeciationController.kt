@@ -9,8 +9,9 @@ class SpeciationController(
     private val neatMutatorToSpeciesMap = mutableMapOf<NeatMutator, Species>()
     private val speciesMap = mutableMapOf<Species, MutableSet<NeatMutator>>()
     private fun nextSpecies(): Species = Species(speciesId++)
-    fun speciate(population: List<NeatMutator>, speciesLineage: SpeciesLineage, generation: Int) {
+    fun speciate(population: List<NeatMutator>, speciesLineage: SpeciesLineage, generation: Int): Map<Species, MutableSet<NeatMutator>> {
         speciesMap.clear()
+
         neatMutatorToSpeciesMap.clear()
         population.forEach { neatMutator ->
             val compatibleSpecies = speciesLineage.compatibleSpecies(neatMutator, compatibilityTest)
@@ -24,10 +25,8 @@ class SpeciationController(
             }
             addSpecies(neatMutator, species)
         }
-
+        return speciesMap.toMap()
     }
-
-    fun avatarForSpecies(species: Species) = speciesMap.getValue(species).first()
 
     private fun addSpecies(
         neatMutator: NeatMutator,
@@ -49,9 +48,6 @@ class SpeciationController(
     }
 
     fun species(neatMutator: NeatMutator) = neatMutatorToSpeciesMap.getValue(neatMutator)
-
-
-
 
 }
 

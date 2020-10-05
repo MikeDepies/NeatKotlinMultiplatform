@@ -8,7 +8,7 @@ fun compatibilityDistance(
     weightDeltaWeight: Float,
     normalizationThreshold: Int = 20
 ): Float {
-    val excessCount = excess(parent1, parent2).size
+    val excessCount = excess(parent1, parent2).size()
     val disjointCount = disjoint(parent1, parent2).run { disjoint1 + disjoint2 }.size
     val matchingGenes = matchingGenes(parent1, parent2)
     val averageSharedWeights = matchingGenes.map { (it.first.weight - it.second.weight) }.sum().div(matchingGenes.size)

@@ -10,45 +10,48 @@ data class FitnessModel<T>(val model: T, val score: Float)
 fun <T> identity(): (T) -> T = { it }
 
 typealias ReproductionStrategy = NeatExperiment.(SpeciationController, List<ModelScore>) -> List<NeatMutator>
+typealias PopulationEvaluator = (List<NeatMutator>) -> List<FitnessModel<NeatMutator>>
 
 fun SpeciationController.population() =
     speciesSet.flatMap { getSpeciesPopulation(it) }
+
 data class Population(val nodeInnovation: Int, val connectionInnovation: Int, val population: List<NeatMutator>)
 data class GenerationRules(
-    val activationFunctions: List<ActivationFunction>,
+//    val activationFunctions: List<ActivationFunction>,
     val speciationController: SpeciationController,
     val adjustedFitness: AdjustedFitnessCalculation,
     val reproductionStrategy: ReproductionStrategy,
-    val populationEvaluator: (List<NeatMutator>) -> List<FitnessModel<NeatMutator>>
+    val populationEvaluator: PopulationEvaluator
 )
 
 class Neat(
-    private val random: Random,
-    private val generationRules: GenerationRules
+    private val generationRules: GenerationRules,
+    private val newGenerationHandler: (SpeciesMap) -> Unit
 ) {
     fun process(
         times: Int,
-        population: Population,
+        population: List<NeatMutator>,
         speciesScoreKeeper: SpeciesScoreKeeper,
-        speciesLineage: SpeciesLineage
+        speciesLineage: SpeciesLineage,
+        simpleNeatExperiment: NeatExperiment
     ) {
-        val (activationFunctions, speciationController, adjustedFitness, reproductionStrategy, populationEvaluator) = generationRules
-        val simpleNeatExperiment = simpleNeatExperiment(
-            random,
-            population.connectionInnovation,
-            population.nodeInnovation,
-            activationFunctions
-        )
-        speciationController.speciate(population.population, speciesLineage, 0)
+        val (speciationController, adjustedFitness, reproductionStrategy, populationEvaluator) = generationRules
+        var currentPopulation = population
+        speciationController.speciate(currentPopulation, speciesLineage, 0)
         repeat(times) { generation ->
+            println("Generation $generation ${currentPopulation.size}")
             val modelScoreList =
-                populationEvaluator(speciationController.population()).toModelScores(adjustedFitness)
+                populationEvaluator(currentPopulation).toModelScores(adjustedFitness)
             sortModelsByAdjustedFitness(speciationController, modelScoreList)
-            val newPopulation = reproductionStrategy(simpleNeatExperiment, speciationController, modelScoreList)
-            speciationController.speciate(newPopulation, speciesLineage, generation)
             speciesScoreKeeper.updateScores(modelScoreList.map { speciationController.species(it.neatMutator) to it })
+            val newPopulation = reproductionStrategy(simpleNeatExperiment, speciationController, modelScoreList)
+            val speciesMap = speciationController.speciate(newPopulation, speciesLineage, generation)
+            newGenerationHandler(speciesMap)
+            currentPopulation = newPopulation
         }
     }
+
+
 
     private fun sortModelsByAdjustedFitness(
         speciationController: SpeciationController,
@@ -63,7 +66,19 @@ class Neat(
     }
 
 
-
+}
+fun validatePopulation(currentPopulation: List<NeatMutator>) {
+    currentPopulation.forEach { neatMutator ->
+        validateNeatModel(neatMutator)
+    }
+}
+fun validateNeatModel(neatMutator: NeatMutator) {
+    neatMutator.connections.forEach { connectionGene ->
+        if (neatMutator.nodes.none { connectionGene.inNode == it.node }
+            || neatMutator.nodes.none { connectionGene.outNode == it.node }) {
+            error("Couldn't satisfy $connectionGene from node pool ${neatMutator.nodes}")
+        }
+    }
 }
 
 fun List<FitnessModel<NeatMutator>>.toModelScores(adjustedFitness: AdjustedFitnessCalculation): List<ModelScore> {
@@ -71,6 +86,7 @@ fun List<FitnessModel<NeatMutator>>.toModelScores(adjustedFitness: AdjustedFitne
         ModelScore(fitnessModel.model, fitnessModel.score, adjustedFitness(fitnessModel))
     }
 }
+
 fun neatMutator(
     inputNumber: Int,
     outputNumber: Int,

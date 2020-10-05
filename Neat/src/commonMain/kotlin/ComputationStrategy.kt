@@ -1,4 +1,5 @@
 typealias ComputationStrategy = () -> Unit
+
 fun Set<NodeGene>.activate(map: Map<NodeGene, NetworkNode>) = forEach { map.getValue(it).activate() }
 fun NeatMutator.getComputationStrategy(
     networkNodeMap: Map<NodeGene, NetworkNode>,
@@ -28,7 +29,15 @@ fun NeatMutator.computationSequence(
             }
 
             val model = this@computationSequence
-            val nextNodeMap = connections.groupBy { idNodeMap.getValue(it.outNode) }
+            val nextNodeMap = connections.groupBy {
+                try {
+                    idNodeMap.getValue(it.outNode)
+                } catch (e: Exception) {
+                    println(model)
+                    error("failed for $it => ${e.message}")
+
+                }
+            }
             val fn = {
                 capturedSet.activate(networkNodeMap)
                 connections.forEach { connection ->
