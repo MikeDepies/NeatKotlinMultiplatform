@@ -6,9 +6,9 @@ import kotlin.random.Random
 
 fun mutationDictionary(activationFunctions: List<ActivationFunction>): List<MutationEntry> {
     return listOf(
-        .3f chanceToMutate mutateConnections,
-        .04f chanceToMutate mutateAddNode,
-        .1f chanceToMutate mutateAddConnection,
+        .8f chanceToMutate mutateConnections,
+        .2f chanceToMutate mutateAddNode,
+        .2f chanceToMutate mutateAddConnection,
 //            .1f chanceToMutate mutatePerturbBiasConnections(),
         .11f chanceToMutate mutateToggleConnection,
 //            .1f chanceToMutate mutateNodeActivationFunction(activationFunctions),
@@ -18,15 +18,15 @@ fun mutationDictionary(activationFunctions: List<ActivationFunction>): List<Muta
 
 fun runNeatExample() {
     val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
-    val dataFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, 1f) }
-    val sharingFunction = shFunction(3f)
+    val dataFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .41f) }
+    val sharingFunction = shFunction(10f)
     val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
     val population = simpleNeatExperiment.generateInitialPopulation(1000)
     val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, dataFunction))
     val generationRules = GenerationRules(
         speciationController = speciationController,
         adjustedFitness = adjustedFitnessCalculation(speciationController, dataFunction, sharingFunction),
-        reproductionStrategy = weightedReproduction(mutationDictionary(activationFunctions), .11f),
+        reproductionStrategy = weightedReproduction(mutationDictionary(activationFunctions), .61f),
         populationEvaluator = {
             val inputOutput = setupEnvironment().map { it() }
             evaluatePopulation(it, inputOutput)

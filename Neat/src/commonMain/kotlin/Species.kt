@@ -1,3 +1,5 @@
+import kotlin.math.max
+
 data class Species(val id: Int)
 
 
@@ -73,6 +75,7 @@ fun SpeciationController.calculateSpeciesReport(
         skim = countOffspring.skim
         totalOffspring += countOffspring.offspring
         speciesOffspringMap[species] = countOffspring.offspring
+//        println("$species - ${countOffspring.offspring}")
     }
 
     return SpeciesReport(
@@ -149,7 +152,7 @@ fun SpeciationController.reproduce(
     offspringFunction: OffspringFunction
 ): SpeciesMap {
     return speciesSet.map { species ->
-        val speciesPopulation = speciesReport.speciesMap.getValue(species)
+        val speciesPopulation = speciesReport.speciesMap.getValue(species).let { it.take(max(1, (it.size * .7f).toInt()) ) }
         val offspring = speciesReport.speciesOffspringMap.getValue(species)
         val newGenerationPopulation = (0 until offspring).map {
             offspringFunction(neatExperiment, speciesPopulation)
