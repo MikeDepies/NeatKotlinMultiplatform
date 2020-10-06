@@ -39,7 +39,7 @@ class Neat(
         var currentPopulation = population
         speciationController.speciate(currentPopulation, speciesLineage, 0)
         repeat(times) { generation ->
-            println("Generation $generation ${currentPopulation.size}")
+            println("Generation $generation Population: ${currentPopulation.size} NumberOfSpecies: ${speciationController.speciesSet.size}")
             val modelScoreList =
                 populationEvaluator(currentPopulation).toModelScores(adjustedFitness)
             sortModelsByAdjustedFitness(speciationController, modelScoreList)

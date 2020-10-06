@@ -1,3 +1,3 @@
 fun main() {
-    runNeatExample()
+    runWeightSummationExample()
 }

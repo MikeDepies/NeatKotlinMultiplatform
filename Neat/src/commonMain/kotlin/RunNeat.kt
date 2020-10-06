@@ -2,13 +2,14 @@ import mutation.mutateAddConnection
 import mutation.mutateAddNode
 import mutation.mutateConnections
 import mutation.mutateToggleConnection
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 fun mutationDictionary(activationFunctions: List<ActivationFunction>): List<MutationEntry> {
     return listOf(
         .8f chanceToMutate mutateConnections,
-        .2f chanceToMutate mutateAddNode,
-        .2f chanceToMutate mutateAddConnection,
+        .18f chanceToMutate mutateAddNode,
+        .12f chanceToMutate mutateAddConnection,
 //            .1f chanceToMutate mutatePerturbBiasConnections(),
         .11f chanceToMutate mutateToggleConnection,
 //            .1f chanceToMutate mutateNodeActivationFunction(activationFunctions),
@@ -36,11 +37,55 @@ fun runNeatExample() {
     val neat = Neat(generationRules) {
         val species = speciesScoreKeeper.bestSpecies()
         val modelScore = speciesScoreKeeper.getModelScore(species)
-//        println("$species - ${modelScore?.fitness}")
     }
     neat.process(20, population, speciesScoreKeeper, SpeciesLineage(listOf()), simpleNeatExperiment)
 }
+fun runNodeCountExample() {
+    val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
+    val dataFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, 1f) }
+    val sharingFunction = shFunction(3f)
+    val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
+    val population = simpleNeatExperiment.generateInitialPopulation(10000)
+    val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, dataFunction))
+    val generationRules = GenerationRules(
+        speciationController = speciationController,
+        adjustedFitness = adjustedFitnessCalculation(speciationController, dataFunction, sharingFunction),
+        reproductionStrategy = weightedReproduction(mutationDictionary(activationFunctions), .21f),
+        populationEvaluator = { population ->
+            population.map { FitnessModel(it, 32f - (32 - it.nodes.size).absoluteValue) }
+        }
+    )
+    val speciesScoreKeeper = SpeciesScoreKeeper()
+    val neat = Neat(generationRules) {
+        val species = speciesScoreKeeper.bestSpecies()
+        val modelScore = speciesScoreKeeper.getModelScore(species)
+    }
+    neat.process(200, population, speciesScoreKeeper, SpeciesLineage(listOf()), simpleNeatExperiment)
+}
 
+
+fun runWeightSummationExample() {
+    val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
+    val dataFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
+    val sharingFunction = shFunction(10f)
+    val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
+    val population = simpleNeatExperiment.generateInitialPopulation(2000)
+    val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, dataFunction))
+    val generationRules = GenerationRules(
+        speciationController = speciationController,
+        adjustedFitness = adjustedFitnessCalculation(speciationController, dataFunction, sharingFunction),
+        reproductionStrategy = weightedReproduction(mutationDictionary(activationFunctions), .41f),
+        populationEvaluator = { population ->
+            population.map { FitnessModel(it, 100f - (100 - it.connections.map { c -> c.weight }.sum()).absoluteValue) }
+        }
+    )
+    val speciesScoreKeeper = SpeciesScoreKeeper()
+    val neat = Neat(generationRules) {
+        val species = speciesScoreKeeper.bestSpecies()
+        val modelScore = speciesScoreKeeper.getModelScore(species)
+    }
+    neat.process(400, population, speciesScoreKeeper, SpeciesLineage(listOf()), simpleNeatExperiment)
+}
 
 fun weightedReproduction(
     mutationEntries: List<MutationEntry>,

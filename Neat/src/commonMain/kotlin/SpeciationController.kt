@@ -32,7 +32,6 @@ class SpeciationController(
         neatMutator: NeatMutator,
         species: Species
     ): Species {
-
         val speciesSet = speciesMap.getValue(species)
         speciesSet += neatMutator
         neatMutatorToSpeciesMap[neatMutator] = species
