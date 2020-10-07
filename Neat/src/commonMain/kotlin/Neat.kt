@@ -12,8 +12,8 @@ fun <T> identity(): (T) -> T = { it }
 typealias ReproductionStrategy = NeatExperiment.(SpeciationController, List<ModelScore>) -> List<NeatMutator>
 typealias PopulationEvaluator = (List<NeatMutator>) -> List<FitnessModel<NeatMutator>>
 
-fun SpeciationController.population() =
-    speciesSet.flatMap { getSpeciesPopulation(it) }
+//fun SpeciationController.population() =
+//    speciesSet.flatMap { getSpeciesPopulation(it) }
 
 data class Population(val nodeInnovation: Int, val connectionInnovation: Int, val population: List<NeatMutator>)
 data class GenerationRules(
@@ -39,18 +39,19 @@ class Neat(
         var currentPopulation = population
         speciationController.speciate(currentPopulation, speciesLineage, 0)
         repeat(times) { generation ->
-            println("Generation $generation Population: ${currentPopulation.size} NumberOfSpecies: ${speciationController.speciesSet.size}")
+            println("Generation $generation Population: ${currentPopulation.size} NumberOfSpecies: ${speciationController.speciesSet.size} TotalSpeciesCount: ${speciesLineage.species.lastOrNull()}")
             val modelScoreList =
                 populationEvaluator(currentPopulation).toModelScores(adjustedFitness)
             sortModelsByAdjustedFitness(speciationController, modelScoreList)
             speciesScoreKeeper.updateScores(modelScoreList.map { speciationController.species(it.neatMutator) to it })
             val newPopulation = reproductionStrategy(simpleNeatExperiment, speciationController, modelScoreList)
             val speciesMap = speciationController.speciate(newPopulation, speciesLineage, generation)
+            println("speciesMapSize: ${speciesMap.values.flatten().size} newPopulationSize: ${newPopulation.size} controllerSize: ${speciationController.population().size}")
             newGenerationHandler(speciesMap)
             currentPopulation = newPopulation
+
         }
     }
-
 
 
     private fun sortModelsByAdjustedFitness(
@@ -67,11 +68,13 @@ class Neat(
 
 
 }
+
 fun validatePopulation(currentPopulation: List<NeatMutator>) {
     currentPopulation.forEach { neatMutator ->
         validateNeatModel(neatMutator)
     }
 }
+
 fun validateNeatModel(neatMutator: NeatMutator) {
     neatMutator.connections.forEach { connectionGene ->
         if (neatMutator.nodes.none { connectionGene.inNode == it.node }
@@ -82,6 +85,7 @@ fun validateNeatModel(neatMutator: NeatMutator) {
 }
 
 fun List<FitnessModel<NeatMutator>>.toModelScores(adjustedFitness: AdjustedFitnessCalculation): List<ModelScore> {
+    println("To Model scores size: ${this.size}")
     return map { fitnessModel ->
         ModelScore(fitnessModel.model, fitnessModel.score, adjustedFitness(fitnessModel))
     }

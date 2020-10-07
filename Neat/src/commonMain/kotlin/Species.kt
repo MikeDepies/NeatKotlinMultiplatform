@@ -77,6 +77,10 @@ fun SpeciationController.calculateSpeciesReport(
         speciesOffspringMap[species] = countOffspring.offspring
 //        println("$species - ${countOffspring.offspring}")
     }
+    if (totalOffspring < modelScoreList.size) {
+        val species = speciesSet.random()
+        speciesOffspringMap[species] = speciesOffspringMap.getValue(species) + 1
+    }
 
     return SpeciesReport(
         speciesOffspringMap.toMap(),

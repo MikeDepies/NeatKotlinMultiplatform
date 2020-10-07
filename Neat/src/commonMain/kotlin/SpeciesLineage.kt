@@ -1,8 +1,11 @@
 class SpeciesLineage(species: List<SpeciesGene>) {
-    val map: MutableMap<Species, SpeciesGene> = species.toMap { it.species }.toMutableMap()
+    private val map: MutableMap<Species, SpeciesGene> = species.toMap { it.species }.toMutableMap()
     fun addSpecies(species: Species, generationBorn: Int, mascot: NeatMutator) {
         map[species] = SpeciesGene(species, generationBorn, mascot)
     }
+    val species get() = map.keys
+
+    fun mascot(species: Species) = map.getValue(species).mascot
 
 //    fun createSpecies(neatMutator: NeatMutator): Species = Species(speciesInnovation++).also { addSpecies(it, 0, neatMutator) }
 
@@ -25,7 +28,7 @@ class SpeciesScoreKeeper {
         modelScores.forEach { (species, modelScore) ->
             if (scoreMap.containsKey(species)) {
                 if (modelScore.fitness > scoreMap.getValue(species).fitness) {
-                    println("update $species - ${modelScore.fitness} > ${scoreMap.getValue(species).fitness}")
+//                    println("update $species - ${modelScore.fitness} > ${scoreMap.getValue(species).fitness}")
                     scoreMap[species] = modelScore
                 }
             } else {

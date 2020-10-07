@@ -38,8 +38,8 @@ fun compatibilityDifference(
     disjointWeight: Float,
     weightDeltaWeight: Float
 ): Float {
-    return (excessWeight * excess).div(numberOfGenes) +
-            (disjointWeight * disjoint).div(numberOfGenes) +
+    return (excessWeight) * (excess / numberOfGenes.toFloat()) +
+            (disjointWeight) * (disjoint / numberOfGenes.toFloat()) +
             (weightDeltaWeight * averageSharedWeightsDelta)
 }
 

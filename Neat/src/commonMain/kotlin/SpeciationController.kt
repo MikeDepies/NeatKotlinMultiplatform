@@ -7,9 +7,9 @@ class SpeciationController(
     private val compatibilityTest: (NeatMutator, NeatMutator) -> Boolean
 ) {
     private val neatMutatorToSpeciesMap = mutableMapOf<NeatMutator, Species>()
-    private val speciesMap = mutableMapOf<Species, MutableSet<NeatMutator>>()
+    private val speciesMap = mutableMapOf<Species, MutableList<NeatMutator>>()
     private fun nextSpecies(): Species = Species(speciesId++)
-    fun speciate(population: List<NeatMutator>, speciesLineage: SpeciesLineage, generation: Int): Map<Species, MutableSet<NeatMutator>> {
+    fun speciate(population: List<NeatMutator>, speciesLineage: SpeciesLineage, generation: Int): Map<Species, MutableList<NeatMutator>> {
         speciesMap.clear()
 
         neatMutatorToSpeciesMap.clear()
@@ -21,7 +21,7 @@ class SpeciationController(
                 nextSpecies
             }
             if (!speciesMap.containsKey(species)) {
-                speciesMap[species] = mutableSetOf()
+                speciesMap[species] = mutableListOf()
             }
             addSpecies(neatMutator, species)
         }
@@ -42,11 +42,14 @@ class SpeciationController(
     fun getSpeciesPopulation(species: Species) = speciesMap.getValue(species)
     fun sortSpeciesByFitness(fitnessForModelFn: (NeatMutator) -> Float) {
         speciesSet.forEach {
-            speciesMap[it] = getSpeciesPopulation(it).sortedByDescending(fitnessForModelFn).toMutableSet()
+            speciesMap[it] = getSpeciesPopulation(it).sortedByDescending(fitnessForModelFn).toMutableList()
         }
     }
 
     fun species(neatMutator: NeatMutator) = neatMutatorToSpeciesMap.getValue(neatMutator)
+    fun population(): List<NeatMutator> {
+        return speciesMap.values.flatten()
+    }
 
 }
 
