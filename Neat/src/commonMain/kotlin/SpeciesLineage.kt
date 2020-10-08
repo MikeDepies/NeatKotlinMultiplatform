@@ -1,4 +1,4 @@
-class SpeciesLineage(species: List<SpeciesGene>) {
+class SpeciesLineage(species: List<SpeciesGene> = listOf()) {
     private val map: MutableMap<Species, SpeciesGene> = species.toMap { it.species }.toMutableMap()
     fun addSpecies(species: Species, generationBorn: Int, mascot: NeatMutator) {
         map[species] = SpeciesGene(species, generationBorn, mascot)

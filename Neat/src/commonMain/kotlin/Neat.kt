@@ -15,7 +15,7 @@ typealias PopulationEvaluator = (List<NeatMutator>) -> List<FitnessModel<NeatMut
 //fun SpeciationController.population() =
 //    speciesSet.flatMap { getSpeciesPopulation(it) }
 
-data class Population(val nodeInnovation: Int, val connectionInnovation: Int, val population: List<NeatMutator>)
+//data class Population(val nodeInnovation: Int, val connectionInnovation: Int, val population: List<NeatMutator>)
 data class GenerationRules(
 //    val activationFunctions: List<ActivationFunction>,
     val speciationController: SpeciationController,
@@ -25,9 +25,9 @@ data class GenerationRules(
 )
 
 class Neat(
-    private val generationRules: GenerationRules,
-    private val newGenerationHandler: (SpeciesMap) -> Unit
+    private val generationRules: GenerationRules
 ) {
+    val generationFinishedHandlers = mutableListOf<(SpeciesMap) -> Unit>()
     fun process(
         times: Int,
         population: List<NeatMutator>,
@@ -47,7 +47,8 @@ class Neat(
             val newPopulation = reproductionStrategy(simpleNeatExperiment, speciationController, modelScoreList)
             val speciesMap = speciationController.speciate(newPopulation, speciesLineage, generation)
             println("speciesMapSize: ${speciesMap.values.flatten().size} newPopulationSize: ${newPopulation.size} controllerSize: ${speciationController.population().size}")
-            newGenerationHandler(speciesMap)
+//            newGenerationHandler(speciesMap)
+            generationFinishedHandlers.forEach { it(speciesMap) }
             currentPopulation = newPopulation
 
         }

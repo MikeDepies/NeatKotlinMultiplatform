@@ -5,6 +5,7 @@ import kotlin.random.Random
  * where as the experiment decides on the type of operations
  */
 interface NeatExperiment {
+    val activationFunctions: List<ActivationFunction>
     val random: Random
     fun mutateAddConnection(neatMutator: NeatMutator)
     fun mutateAddNode(neatMutator: NeatMutator)

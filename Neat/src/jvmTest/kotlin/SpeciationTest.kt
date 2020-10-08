@@ -11,7 +11,7 @@ class SpeciationTest {
         val df: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
         val sharingFunction = shFunction(3f)
         val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
-        val population = simpleNeatExperiment.generateInitialPopulation(6)
+        val population = simpleNeatExperiment.generateInitialPopulation(6, 3, 1, sigmoidalTransferFunction)
 
         val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
         val adjustedFitness = adjustedFitnessCalculation(speciationController, df, sharingFunction)

@@ -12,8 +12,15 @@ const val standardWeightPerturbationRange = .02f
  */
 typealias Mutation = NeatExperiment.(NeatMutator) -> Unit
 
-fun mutateNodeActivationFunction(activationFunctions: List<ActivationFunction>): Mutation = { neatMutator ->
-    val nodeGene = neatMutator.nodes.filter { it.nodeType != NodeType.Input }.random(random)
+fun mutateNodeActivationFunction(): Mutation = { neatMutator ->
+    val nodeGene = (neatMutator.hiddenNodes + neatMutator.outputNodes).random(random)
+    nodeGene.activationFunction = (activationFunctions - nodeGene.activationFunction).random(random)
+}
+
+fun mutateNodeActivationFunctionWithConnectionInnovations(): Mutation = { neatMutator ->
+    val nodeGene = (neatMutator.hiddenNodes + neatMutator.outputNodes).random(random)
+    val connections = neatMutator.connectionsFrom(nodeGene) + neatMutator.connectionsTo(nodeGene)
+    connections.forEach { it.innovation = nextInnovation() }
     nodeGene.activationFunction = (activationFunctions - nodeGene.activationFunction).random(random)
 }
 

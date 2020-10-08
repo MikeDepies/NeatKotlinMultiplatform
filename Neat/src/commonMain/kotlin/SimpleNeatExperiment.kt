@@ -23,7 +23,7 @@ fun matchingGenes(
 class SimpleNeatExperiment(
     private var innovation: Int,
     private var nodeInnovation: Int,
-    val activationFunctions: List<ActivationFunction>,
+    override val activationFunctions: List<ActivationFunction>,
     override val random: Random,
 ) : NeatExperiment {
 
