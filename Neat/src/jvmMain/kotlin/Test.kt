@@ -1,17 +1,20 @@
+import neat.*
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 fun main() {
-    val generations = 100
-    val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
-    val mutationEntries = mutationDictionary(activationFunctions)
+
+    val generations = 40
+    val activationFunctions = baseActivationFunctions()
+    val mutationEntries = mutationDictionary()
     val speciesScoreKeeper = SpeciesScoreKeeper()
     val speciesLineage = SpeciesLineage()
     val neat = neat(mutationEntries) {
         evaluationFunction = { population ->
-            val inputOutput = setupEnvironment().map { generateQA -> generateQA() }
+            val inputOutput = XORTruthTable().map { generateQA -> generateQA() }
             evaluatePopulation(population, inputOutput)
         }
+        sharingFunction = shFunction(3f)
     }
     neat.generationFinishedHandlers += {
         val species = speciesScoreKeeper.bestSpecies()
@@ -19,7 +22,7 @@ fun main() {
         println("$species - ${modelScore?.fitness}")
     }
     val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
-    val population = simpleNeatExperiment.generateInitialPopulation(100, 3, 1, sigmoidalTransferFunction)
+    val population = simpleNeatExperiment.generateInitialPopulation(100, 3, 1, Activation.sigmoidal)
     neat.process(generations, population, speciesScoreKeeper, speciesLineage, simpleNeatExperiment)
 
     speciesScoreKeeper.bestSpecies().let { species ->

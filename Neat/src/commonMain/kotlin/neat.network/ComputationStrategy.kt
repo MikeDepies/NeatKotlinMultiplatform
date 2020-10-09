@@ -1,3 +1,8 @@
+package neat.network
+
+import neat.model.NeatMutator
+import neat.model.NodeGene
+
 typealias ComputationStrategy = () -> Unit
 
 fun Set<NodeGene>.activate(map: Map<NodeGene, NetworkNode>) = forEach { map.getValue(it).activate() }
@@ -21,6 +26,7 @@ fun NeatMutator.computationSequence(
     return sequence {
         val activationSet = mutableSetOf<NodeGene>()
         var activeSet = inputNodes.toSet()
+        val model = this@computationSequence
         fun networkNotFullyActivated() = (activationSet.size + outputNodes.size) < nodes.size
         while (networkNotFullyActivated()) {
             val capturedSet = activeSet
@@ -28,7 +34,6 @@ fun NeatMutator.computationSequence(
                 connectionsFrom(node)
             }
 
-            val model = this@computationSequence
             val nextNodeMap = connections.groupBy {
                 try {
                     idNodeMap.getValue(it.outNode)

@@ -1,3 +1,7 @@
+package neat.network
+
+import neat.ActivationFunction
+
 data class NetworkNode(val activationFunction: ActivationFunction, var value: Float, var activatedValue: Float)
 
 fun NetworkNode.activate() {

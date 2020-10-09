@@ -1,3 +1,5 @@
+import neat.*
+import neat.model.*
 import kotlin.test.*
 
 class NeatTest {
@@ -6,7 +8,7 @@ class NeatTest {
         val neat: NeatMutator = neatMutator(4, 2)
         val connectionGene = ConnectionGene(100, 101, 1f, true, 1)
         neat.apply {
-            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat mutator") {
+            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat.neat mutator") {
                 neat.addConnection(connectionGene)
             }
         }
@@ -17,7 +19,7 @@ class NeatTest {
         val neat: NeatMutator = neatMutator(4, 2)
         val connectionGene = ConnectionGene(100, 1, 1f, true, 1)
         neat.apply {
-            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat mutator") {
+            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat.neat mutator") {
                 neat.addConnection(connectionGene)
             }
         }
@@ -28,7 +30,7 @@ class NeatTest {
         val neat: NeatMutator = neatMutator(4, 2)
         val connectionGene = ConnectionGene(1, 100, 1f, true, 1)
         neat.apply {
-            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat mutator") {
+            assertFails("Connection can not be added because connection gene refers to nodes that aren't in the neat.neat mutator") {
                 neat.addConnection(connectionGene)
             }
         }

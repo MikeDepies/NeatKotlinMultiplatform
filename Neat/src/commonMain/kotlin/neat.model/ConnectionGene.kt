@@ -1,3 +1,5 @@
+package neat.model
+
 data class ConnectionGene(
     var inNode: Int,
     var outNode: Int,

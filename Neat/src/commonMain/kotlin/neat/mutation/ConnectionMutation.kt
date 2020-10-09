@@ -1,10 +1,10 @@
-package mutation
+package neat.mutation
 
-import ConnectionGene
-import MutationRoll
-import NeatExperiment
-import randomWeight
-import rollFrom
+import neat.model.ConnectionGene
+import neat.MutationRoll
+import neat.NeatExperiment
+import neat.randomWeight
+import neat.rollFrom
 
 typealias ConnectionMutation = ConnectionGene.() -> Unit
 

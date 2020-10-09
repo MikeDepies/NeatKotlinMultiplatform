@@ -1,3 +1,7 @@
+package neat
+
+import neat.model.NeatMutator
+
 class SpeciesLineage(species: List<SpeciesGene> = listOf()) {
     private val map: MutableMap<Species, SpeciesGene> = species.toMap { it.species }.toMutableMap()
     fun addSpecies(species: Species, generationBorn: Int, mascot: NeatMutator) {
@@ -7,7 +11,7 @@ class SpeciesLineage(species: List<SpeciesGene> = listOf()) {
 
     fun mascot(species: Species) = map.getValue(species).mascot
 
-//    fun createSpecies(neatMutator: NeatMutator): Species = Species(speciesInnovation++).also { addSpecies(it, 0, neatMutator) }
+//    fun createSpecies(neat.model.neatMutator: neat.model.NeatMutator): neat.Species = neat.Species(speciesInnovation++).also { addSpecies(it, 0, neat.model.neatMutator) }
 
     fun compatibleSpecies(neatMutator: NeatMutator, compatible: CompatibilityTest): Species? {
         return map.keys.firstOrNull {
@@ -44,8 +48,8 @@ class SpeciesScoreKeeper {
 
 /**
  *
-, speciesProvider: (NeatMutator) -> Species) {
-modelScores.groupBy { speciesProvider(it.neatMutator) }
+, speciesProvider: (neat.model.NeatMutator) -> neat.Species) {
+modelScores.groupBy { speciesProvider(it.neat.model.neatMutator) }
 .map {
 val key = it.key
 val bestInSpecies = it.value.maxByOrNull { modelScore -> modelScore.adjustedFitness }

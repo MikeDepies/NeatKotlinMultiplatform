@@ -1,5 +1,9 @@
+package neat.model
+
+import neat.toMap
+
 fun simpleNeatMutator(nodes: List<NodeGene>, connections: List<ConnectionGene>): NeatMutator {
-//    return SimpleNeatMutator(nodes.toMutableList(), connections.toMutableList())
+//    return neat.model.SimpleNeatMutator(nodes.toMutableList(), connections.toMutableList())
     return SimpleNeatMutator2(
         nodes.toMap { it.node }.toMutableMap(),
         connections.toMap { it.innovation }.toMutableMap()
@@ -13,6 +17,9 @@ data class SimpleNeatMutator(
 ) : NeatMutator {
     private val _connectableNodes = resolvePotentialConnections(nodes, connections).toMutableList()
 
+    override fun modifiedConnections() {
+
+    }
     override fun node(node: Int): NodeGene {
         return nodes.first { it.node == node }
     }
@@ -110,13 +117,18 @@ data class SimpleNeatMutator2(
     val nodeMap: MutableMap<Int, NodeGene>,
     val connectionMap: MutableMap<Int, ConnectionGene>
 ) : NeatMutator {
-    //    var lastInnovation = 0
+    //    var neat.lastInnovation = 0
 //    var lastNode = 0
     override val connections: List<ConnectionGene>
         get() = connectionMap.values.toList()
     override val nodes: List<NodeGene>
         get() = nodeMap.values.toList()
 
+    override fun modifiedConnections() {
+        val newConnectionMap = connections.toMap { it.innovation }.toMutableMap()
+        connectionMap.clear()
+        connectionMap.putAll(newConnectionMap)
+    }
     override fun clone(): NeatMutator {
         return copy(
             nodeMap = nodeMap.values.map { it.copy() }.toMap { it.node }.toMutableMap(),

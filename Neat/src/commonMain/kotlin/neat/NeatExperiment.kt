@@ -1,11 +1,14 @@
+package neat
+
+import neat.model.*
 import kotlin.random.Random
 
 /**
- * Random/configuration part of the neat algorithm. This will utilize a Mutator that can peform the desire operation,
+ * Random/configuration part of the neat.neat algorithm. This will utilize a Mutator that can peform the desire operation,
  * where as the experiment decides on the type of operations
  */
 interface NeatExperiment {
-    val activationFunctions: List<ActivationFunction>
+    val activationFunctions: List<ActivationGene>
     val random: Random
     fun mutateAddConnection(neatMutator: NeatMutator)
     fun mutateAddNode(neatMutator: NeatMutator)
@@ -19,17 +22,17 @@ fun NeatExperiment.createNeatMutator(
     inputNumber: Int,
     outputNumber: Int,
     random: Random = Random,
-    function: ActivationFunction = Identity
+    function: ActivationGene = Activation.identity
 ): NeatMutator {
     val simpleNeatMutator = simpleNeatMutator(listOf(), listOf())
-    createNodes(inputNumber, NodeType.Input, identity(), simpleNeatMutator)
+    createNodes(inputNumber, NodeType.Input, Activation.identity, simpleNeatMutator)
     createNodes(outputNumber, NodeType.Output, function, simpleNeatMutator)
     connectNodes(simpleNeatMutator, random)
     return simpleNeatMutator
 }
 
 fun NeatExperiment.createNodes(
-    numberOfNodes: Int, nodeType: NodeType, activationFunction: ActivationFunction, neatMutator: NeatMutator
+    numberOfNodes: Int, nodeType: NodeType, activationFunction: ActivationGene, neatMutator: NeatMutator
 ) = repeat(numberOfNodes) {
     neatMutator.addNode(NodeGene(nextNode(), nodeType, activationFunction))
 }

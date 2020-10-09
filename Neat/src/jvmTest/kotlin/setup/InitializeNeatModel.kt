@@ -1,13 +1,13 @@
 package setup
 
-import ActivationFunction
-import Identity
-import NeatMutator
-import NodeGene
-import NodeType
-import connectNodes
-import neatMutator
-import randomWeight
+import neat.ActivationFunction
+import neat.Identity
+import neat.model.NeatMutator
+import neat.model.NodeGene
+import neat.model.NodeType
+import neat.connectNodes
+import neat.model.neatMutator
+import neat.randomWeight
 import kotlin.random.*
 
 fun initializeCyclicConnectionsNeatModel(

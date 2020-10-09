@@ -1,3 +1,6 @@
+package neat
+
+import neat.model.NeatMutator
 import kotlin.math.*
 
 fun compatibilityDistance(

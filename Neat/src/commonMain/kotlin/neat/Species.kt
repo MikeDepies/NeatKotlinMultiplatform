@@ -1,3 +1,6 @@
+package neat
+
+import neat.model.NeatMutator
 import kotlin.math.max
 
 data class Species(val id: Int)
@@ -65,17 +68,19 @@ fun SpeciationController.calculateSpeciesReport(
 
     val speciesOffspringMap = mutableMapOf<Species, Int>()
     val expectedOffspringMap =
-        modelScoreList.map { it.neatMutator to it.adjustedFitness / overallAverageFitness.toFloat() }.toMap()
+        modelScoreList.map { it.neatMutator to it.adjustedFitness / (overallAverageFitness.toFloat()) }.toMap()
     var skim = 0.0
     var totalOffspring = 0
     for (species in speciesSet) {
 
+        val speciesPopulation = getSpeciesPopulation(species)
+        val map = speciesPopulation.map { expectedOffspringMap.getValue(it) }
         val countOffspring =
-            getSpeciesPopulation(species).map { expectedOffspringMap.getValue(it) }.countOffspring(skim)
+            map.countOffspring(skim)
         skim = countOffspring.skim
         totalOffspring += countOffspring.offspring
         speciesOffspringMap[species] = countOffspring.offspring
-//        println("$species - ${countOffspring.offspring}")
+//        println("$species - ${neat.countOffspring.offspring}")
     }
     if (totalOffspring < modelScoreList.size) {
         val species = speciesSet.random()
@@ -140,12 +145,14 @@ fun populateNextGeneration(
     modelScoreList: List<ModelScore>,
     mutationEntries: List<MutationEntry>,
     simpleNeatExperiment: NeatExperiment,
-    mateChance: Float
+    mateChance: Float,
+    survivalThreshold: Float
 ): List<NeatMutator> {
     return speciationController.reproduce(
         simpleNeatExperiment,
         speciationController.speciesReport(modelScoreList),
-        offspringFunction(mateChance, mutationEntries)
+        offspringFunction(mateChance, mutationEntries),
+        survivalThreshold
     ).values.flatten()
 }
 
@@ -153,10 +160,11 @@ fun populateNextGeneration(
 fun SpeciationController.reproduce(
     neatExperiment: NeatExperiment,
     speciesReport: SpeciesReport,
-    offspringFunction: OffspringFunction
+    offspringFunction: OffspringFunction,
+    survivalThreshold: Float
 ): SpeciesMap {
     return speciesSet.map { species ->
-        val speciesPopulation = speciesReport.speciesMap.getValue(species).let { it.take(max(1, (it.size * .7f).toInt()) ) }
+        val speciesPopulation = speciesReport.speciesMap.getValue(species).let { it.take(max(1, (it.size * survivalThreshold).toInt()) ) }
         val offspring = speciesReport.speciesOffspringMap.getValue(species)
         val newGenerationPopulation = (0 until offspring).map {
             offspringFunction(neatExperiment, speciesPopulation)
@@ -192,18 +200,18 @@ private fun newOffspring(
         probabilityToMate(neatExperiment) && speciesPopulation.size > 1 -> {
             val randomParent1 = speciesPopulation.random(neatExperiment.random)
             val randomParent2 = (speciesPopulation - randomParent1).random(neatExperiment.random)
-//            validateNeatModel(randomParent1.neatMutator)
-//            validateNeatModel(randomParent2.neatMutator)
+//            neat.validateNeatModel(randomParent1.neat.model.neatMutator)
+//            neat.validateNeatModel(randomParent2.neat.model.neatMutator)
             neatExperiment.crossover(
                 FitnessModel(randomParent1.neatMutator, randomParent1.adjustedFitness),
                 FitnessModel(randomParent2.neatMutator, randomParent2.adjustedFitness)
             )
 //                .also {
 //                    try {
-//                        validateNeatModel(it)
+//                        neat.validateNeatModel(it)
 //                    } catch (e: Exception) {
-//                        println("Parent 1 - ${randomParent1.adjustedFitness}: ${randomParent1.neatMutator}")
-//                        println("Parent 2 - ${randomParent2.adjustedFitness}: ${randomParent2.neatMutator}")
+//                        println("Parent 1 - ${randomParent1.adjustedFitness}: ${randomParent1.neat.model.neatMutator}")
+//                        println("Parent 2 - ${randomParent2.adjustedFitness}: ${randomParent2.neat.model.neatMutator}")
 //                        throw(e)
 //                    }
 //                }

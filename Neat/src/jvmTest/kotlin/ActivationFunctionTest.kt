@@ -1,3 +1,5 @@
+import neat.Identity
+import neat.sigmoidalTransferFunction
 import kotlin.test.*
 
 

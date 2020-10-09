@@ -1,3 +1,7 @@
+package neat.network
+
+import neat.ActivatableNetwork
+
 class SimpleActivatableNetwork(
     private val inputNodes: List<NetworkNode>,
     override val outputNodes: List<NetworkNode>,

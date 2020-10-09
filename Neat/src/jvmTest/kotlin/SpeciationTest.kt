@@ -1,3 +1,5 @@
+import neat.*
+import neat.model.NeatMutator
 import org.junit.Test
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -6,12 +8,12 @@ class SpeciationTest {
 
     @Test
     fun process() {
-        val activationFunctions = listOf(sigmoidalTransferFunction, Identity)
+        val activationFunctions = listOf(SigmoidalTransferFunction, Identity)
         val mutationEntries = mutationDictionary(activationFunctions)
         val df: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
         val sharingFunction = shFunction(3f)
         val simpleNeatExperiment = simpleNeatExperiment(Random(0), 0, 0, activationFunctions)
-        val population = simpleNeatExperiment.generateInitialPopulation(6, 3, 1, sigmoidalTransferFunction)
+        val population = simpleNeatExperiment.generateInitialPopulation(6, 3, 1, SigmoidalTransferFunction)
 
         val speciationController = SpeciationController(0, standardCompatibilityTest(sharingFunction, df))
         val adjustedFitness = adjustedFitnessCalculation(speciationController, df, sharingFunction)
@@ -28,7 +30,14 @@ class SpeciationTest {
 
             sortModelsByAdjustedFitness(speciationController, modelScoreList)
             val newPopulation =
-                populateNextGeneration(speciationController, modelScoreList, mutationEntries, simpleNeatExperiment, 1f)
+                populateNextGeneration(
+                    speciationController,
+                    modelScoreList,
+                    mutationEntries,
+                    simpleNeatExperiment,
+                    1f,
+                    .7f
+                )
             speciationController.speciate(newPopulation, speciesLineage, generation)
             speciesScoreKeeper.updateScores(modelScoreList.map { speciationController.species(it.neatMutator) to it })
         }
@@ -39,7 +48,7 @@ class SpeciationTest {
         val keys = speciesReport.speciesMap.keys
         for (species in keys) {
             val first = speciesReport.speciesMap.getValue(species).first()
-            println("Species ${species.id} (pop: ${speciesReport.speciesOffspringMap[species]} offspring: ${speciesReport.speciesOffspringMap[species]} topScore= {${first.fitness}, ${first.adjustedFitness}})")
+            println("neat.Species ${species.id} (pop: ${speciesReport.speciesOffspringMap[species]} offspring: ${speciesReport.speciesOffspringMap[species]} topScore= {${first.fitness}, ${first.adjustedFitness}})")
             speciesReport.speciesMap.getValue(species).forEach {
                 println("\t${it.neatMutator.connections.condensedString()}\t${it.neatMutator.nodes.condensedString()}")
             }

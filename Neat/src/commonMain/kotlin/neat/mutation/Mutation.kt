@@ -1,14 +1,12 @@
-package mutation
+package neat.mutation
 
-import ActivationFunction
-import NeatExperiment
-import NeatMutator
-import NodeType
+import neat.NeatExperiment
+import neat.model.NeatMutator
 
 const val standardWeightPerturbationRange = .02f
 
 /**
- * A mutation.Mutation that can be applied to a mutator in the context of a given experiment.
+ * A neat.neat.mutation.Mutation that can be applied to a mutator in the context of a given experiment.
  */
 typealias Mutation = NeatExperiment.(NeatMutator) -> Unit
 
@@ -21,6 +19,7 @@ fun mutateNodeActivationFunctionWithConnectionInnovations(): Mutation = { neatMu
     val nodeGene = (neatMutator.hiddenNodes + neatMutator.outputNodes).random(random)
     val connections = neatMutator.connectionsFrom(nodeGene) + neatMutator.connectionsTo(nodeGene)
     connections.forEach { it.innovation = nextInnovation() }
+    neatMutator.modifiedConnections()
     nodeGene.activationFunction = (activationFunctions - nodeGene.activationFunction).random(random)
 }
 

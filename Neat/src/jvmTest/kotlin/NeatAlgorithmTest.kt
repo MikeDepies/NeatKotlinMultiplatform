@@ -1,4 +1,7 @@
 import io.mockk.*
+import neat.*
+import neat.model.ConnectionGene
+import neat.model.neatMutator
 import setup.*
 import kotlin.random.*
 import kotlin.test.*
@@ -197,7 +200,7 @@ class NeatAlgorithmTest {
     private fun List<ConnectionGene>.takeInnovations(
         excessInnovationNumbers: List<Int>
     ) = filter { c -> excessInnovationNumbers.any { c.innovation == it } }
-    //Do we use a Score Registry instead of a FitnessModel object? that way we can generalize it to a
+    //Do we use a Score Registry instead of a neat.FitnessModel object? that way we can generalize it to a
     //lambda to resolve the score for a given model.
 
 

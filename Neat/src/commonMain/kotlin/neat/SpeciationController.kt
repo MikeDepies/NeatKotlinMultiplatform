@@ -1,6 +1,10 @@
+package neat
+
+import neat.model.NeatMutator
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-//val Species?.notNull get() = null != this
+//val neat.Species?.notNull get() = null != this
 
 class SpeciationController(
     private var speciesId: Int,
@@ -61,7 +65,8 @@ fun evaluatePopulation(
         val network = neatMutator.toNetwork()
         val score = inputOutput.map {
             network.evaluate(it.first, true)
-            if (network.output().map { it.roundToInt().toFloat() } == it.second) 1f else 0f
+            network.output().zip(it.second).map { 1f - (it.first - it.second).absoluteValue }.sum()
+//            if (network.output().map { it.roundToInt().toFloat() } == it.second) 1f else 0f
         }.sum()
         FitnessModel(neatMutator, score)
     }

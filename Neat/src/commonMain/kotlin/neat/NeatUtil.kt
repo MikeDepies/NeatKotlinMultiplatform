@@ -1,3 +1,12 @@
+package neat
+
+import neat.model.ConnectionGene
+import neat.model.NeatMutator
+import neat.model.NodeGene
+import neat.network.ComputationStrategy
+import neat.network.NetworkNode
+import neat.network.SimpleActivatableNetwork
+import neat.network.getComputationStrategy
 import kotlin.math.*
 import kotlin.random.*
 
@@ -60,7 +69,7 @@ interface ActivatableNetwork {
 
 fun NeatMutator.toNetwork(): ActivatableNetwork {
     val idNodeMap = nodes.toMap { it.node }
-    val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction, 0f, 0f) }.toMap()
+    val networkNodeMap = nodes.map { it to NetworkNode(it.activationFunction.activationFunction, 0f, 0f) }.toMap()
     val inputNodeSet = inputNodes.mapNotNull { networkNodeMap[it] }
     val outputNodeSet = outputNodes.map { networkNodeMap.getValue(it) }
     val computationStrategy: ComputationStrategy = getComputationStrategy(networkNodeMap, idNodeMap)

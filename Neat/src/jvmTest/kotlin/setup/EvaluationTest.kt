@@ -1,15 +1,9 @@
 package setup
 
-import ActivatableNetwork
-import ComputationStrategy
-import NeatMutator
-import NetworkNode
-import SimpleActivatableNetwork
-import getComputationStrategy
 import io.mockk.*
-import neatMutator
-import sigmoidalTransferFunction
-import toNetwork
+import neat.model.neatMutator
+import neat.SigmoidalTransferFunction
+import neat.toNetwork
 import kotlin.random.*
 import kotlin.test.*
 
@@ -31,8 +25,8 @@ class EvaluationTest {
             assertEquals(expected, result)
             println("value=${network.outputNodes.map { it.value }}\nactivated=$result")
         }
-//        neatMutator.evaluate(input)
-//        assertEquals(1f, neatMutator.outputNodes[0].value)
+//        neat.model.neatMutator.evaluate(input)
+//        assertEquals(1f, neat.model.neatMutator.outputNodes[0].value)
     }
 
     @Test
@@ -44,7 +38,7 @@ class EvaluationTest {
         val input = listOf(1f)
         network.evaluate(input)
         val result = network.output()
-//        val result = neatMutator.evaluate(input)
+//        val result = neat.model.neatMutator.evaluate(input)
         assertEquals(expected, result)
     }
 
@@ -57,7 +51,7 @@ class EvaluationTest {
         val input = listOf(1f)
         network.evaluate(input)
         val result = network.output()
-//        val result = neatMutator.evaluate(input)
+//        val result = neat.model.neatMutator.evaluate(input)
         assertEquals(expected, result)
     }
 
@@ -66,11 +60,11 @@ class EvaluationTest {
         val expected = listOf(.5f)
         val random = mockk<Random>()
         every { random.nextFloat() } returnsMany listOf(.1f)
-        val network = neatMutator(1, 1, random, sigmoidalTransferFunction).toNetwork()
+        val network = neatMutator(1, 1, random, SigmoidalTransferFunction).toNetwork()
         val input = listOf(0f)
         network.evaluate(input)
         val result = network.output()
-//        val result = neatMutator.evaluate(input)
+//        val result = neat.model.neatMutator.evaluate(input)
         assertEquals(expected, result)
     }
 
@@ -81,12 +75,12 @@ class EvaluationTest {
         every { b.nextFloat() } returnsMany listOf(1f)
 //        b.nextFloat()
 
-//        every { random.nextFloat() } returnsMany listOf(.3f, .6f)
+//        every { neat.random.nextFloat() } returnsMany listOf(.3f, .6f)
         val network = neatMutator(1, 1, b).toNetwork()
         val input = listOf(2f)
         network.evaluate(input)
         val result = network.output()
-//        val result = neatMutator.evaluate(input)
+//        val result = neat.model.neatMutator.evaluate(input)
         assertEquals(expected, result)
     }
 

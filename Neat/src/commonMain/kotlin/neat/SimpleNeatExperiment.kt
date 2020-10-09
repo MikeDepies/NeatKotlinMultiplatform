@@ -1,3 +1,6 @@
+package neat
+
+import neat.model.*
 import kotlin.jvm.JvmName
 import kotlin.random.*
 
@@ -5,7 +8,7 @@ fun simpleNeatExperiment(
     random: Random,
     innovation: Int,
     nodeInnovation: Int,
-    activationFunctions: List<ActivationFunction>
+    activationFunctions: List<ActivationGene>
 ): NeatExperiment {
     return SimpleNeatExperiment(innovation, nodeInnovation, activationFunctions, random)
 }
@@ -23,13 +26,13 @@ fun matchingGenes(
 class SimpleNeatExperiment(
     private var innovation: Int,
     private var nodeInnovation: Int,
-    override val activationFunctions: List<ActivationFunction>,
+    override val activationFunctions: List<ActivationGene>,
     override val random: Random,
 ) : NeatExperiment {
 
 //    private var innovation = innovation
 //    private var nodeInnovation = nodeInnovation
-//    override val random: Random get() = random
+//    override val neat.random: Random get() = neat.random
 
     fun connectionGene(potentialConnection: PotentialConnection): ConnectionGene {
         val (sourceNode, targetNode, type) = potentialConnection
@@ -77,9 +80,9 @@ class SimpleNeatExperiment(
 
             }
         }
-//        if (neatMutator.connectableNodes.isNotEmpty()) {
-//            val potentialConnection = neatMutator.connectableNodes.random(random)
-//            neatMutator.addConnection(connectionGene(potentialConnection))
+//        if (neat.model.neatMutator.connectableNodes.isNotEmpty()) {
+//            val potentialConnection = neat.model.neatMutator.connectableNodes.neat.random(neat.random)
+//            neat.model.neatMutator.addConnection(connectionGene(potentialConnection))
 //        }
     }
 
@@ -89,14 +92,14 @@ class SimpleNeatExperiment(
         val copiedConnection = randomConnection.copy(innovation = nextInnovation(), inNode = node.node)
         val newEmptyConnection = ConnectionGene(randomConnection.inNode, node.node, 1f, true, nextInnovation())
 //        println("\tMUTATE ADD NODE")
-//        println("\t${neatMutator.connections.condensedString()}\t${neatMutator.nodes.condensedString()}")
+//        println("\t${neat.model.neatMutator.connections.neat.condensedString()}\t${neat.model.neatMutator.nodes.neat.condensedString()}")
         randomConnection.enabled = false
         neatMutator.apply {
             addNode(node)
             addConnection(copiedConnection)
             addConnection(newEmptyConnection)
         }
-//        println("\t${neatMutator.connections.condensedString()}\t${neatMutator.nodes.condensedString()}")
+//        println("\t${neat.model.neatMutator.connections.neat.condensedString()}\t${neat.model.neatMutator.nodes.neat.condensedString()}")
     }
 
     override fun nextInnovation(): Int {
@@ -112,7 +115,7 @@ class SimpleNeatExperiment(
         val excess = excess(parent1.model, parent2.model)
         val matchingGenes = matchingGenes(parent1.model, parent2.model)
 //        println("| Matching Genes")
-//        matchingGenes.forEach {
+//        neat.matchingGenes.forEach {
 //            println(it)
 //        }
         val selectedRandomGenes = matchingGenes.map { it.random(random) }
@@ -120,21 +123,21 @@ class SimpleNeatExperiment(
             parent1.isLessFitThan(parent2) -> {
 //                println("Parent 2 Is More Fit")
 //                println("Disjoint: $disjoint2")
-//                println("Excess: ${excess.excess2}")
+//                println("Excess: ${neat.excess.excess2}")
 //                println("Selected: $selectedRandomGenes")
                 (selectedRandomGenes + disjoint2 + excess.excess2).sortedBy { it.innovation }
             }
-//            parent1.isMoreFitThan(parent2)
+//            parent1.neat.isMoreFitThan(parent2)
             else -> {
 //                println("Parent 1 Is More Fit")
 //                println("${parent1.model.nodes.map { it.node }}")
 //                println("Disjoint: $disjoint1")
-//                println("Excess: ${excess.excess1}")
+//                println("Excess: ${neat.excess.excess1}")
 //                println("Selected: $selectedRandomGenes")
                 (selectedRandomGenes + disjoint1 + excess.excess1).sortedBy { it.innovation }
             }
 //            else -> {
-//                (matchingGenes.map { it.random(random) } + (disjoint1 + disjoint2 + excess).filter { random.nextBoolean() }).sortedBy { it.innovation }
+//                (neat.matchingGenes.map { it.neat.random(neat.random) } + (disjoint1 + disjoint2 + neat.excess).filter { neat.random.nextBoolean() }).sortedBy { it.innovation }
 //            }
         }.map { it.copy() }
         val nodes = (if (parent1.isLessFitThan(parent2)) parent2.model.nodes else parent1.model.nodes).map { it.copy() }
@@ -144,7 +147,7 @@ class SimpleNeatExperiment(
 
 }
 
-fun NeatExperiment.newNode(activationFunction: ActivationFunction): NodeGene {
+fun NeatExperiment.newNode(activationFunction: ActivationGene): NodeGene {
     return NodeGene(nextNode(), NodeType.Hidden, activationFunction)
 }
 
