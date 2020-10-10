@@ -1,8 +1,10 @@
 package neat
 
+import kotlin.js.JsExport
 import kotlin.math.*
 
 typealias ActivationFunction = (Float) -> Float
+@JsExport
 class ActivationGene(val name : String, val activationFunction: ActivationFunction)
 fun sigmoidalTransferFunction(x: Float): Float = 1.div(1 + exp(-4.9f * x))
 val Identity: ActivationFunction = { it }

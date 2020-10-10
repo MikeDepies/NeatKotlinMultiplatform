@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version "1.4.0"
-
+    kotlin("multiplatform") version "1.4.10"
+    kotlin("plugin.serialization") version "1.4.10"
 }
 
 group = "me.michael.depies"
@@ -8,8 +8,12 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    jcenter()
 }
+
 dependencies {
+//    implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION)) // or "stdlib-jdk8"
+    commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
 }
 
 kotlin {
@@ -18,15 +22,16 @@ kotlin {
             kotlinOptions.jvmTarget = "1.8"
         }
     }
-    js {
-        browser {
+    js(IR) {
+        /*browser {
             testTask {
                 useKarma {
                     useChromeHeadless()
                     webpackConfig.cssSupport.enabled = true
                 }
             }
-        }
+        }*/
+        binaries.executable()
     }
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
