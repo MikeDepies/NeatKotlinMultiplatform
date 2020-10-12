@@ -1,3 +1,5 @@
+import java.util.regex.Pattern.compile
+
 plugins {
     kotlin("multiplatform") version "1.4.10"
     kotlin("plugin.serialization") version "1.4.10"
@@ -22,16 +24,16 @@ kotlin {
             kotlinOptions.jvmTarget = "1.8"
         }
     }
-    js(IR) {
-        /*browser {
+    js {
+        browser {
             testTask {
                 useKarma {
                     useChromeHeadless()
                     webpackConfig.cssSupport.enabled = true
                 }
             }
-        }*/
-        binaries.executable()
+        }
+//        binaries.executable()
     }
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
@@ -44,14 +46,25 @@ kotlin {
 
 
     sourceSets {
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+//                implementation("io.ktor:ktor-server-netty:1.4.10")
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor:1.4.0")
+                implementation("io.ktor:ktor-server-core:1.4.0")
+                implementation("io.ktor:ktor-server-netty:1.4.0")
+
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))

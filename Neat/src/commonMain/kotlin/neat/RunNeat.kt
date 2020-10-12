@@ -13,7 +13,6 @@ fun mutationDictionary(): List<MutationEntry> {
         .1f chanceToMutate mutatePerturbBiasConnections(),
         .11f chanceToMutate mutateToggleConnection,
         .1f chanceToMutate mutateNodeActivationFunction(),
-
         )
 }
 
@@ -38,7 +37,7 @@ fun neat(mutationEntries: List<MutationEntry>, builder: NeatBuilder.() -> Unit):
 class NeatBuilder(mutationEntries: List<MutationEntry>) {
     var sharingFunction: SharingFunction = shFunction(3f)
     var distanceFunction: DistanceFunction = compatibilityDistanceFunction(1f, 1f, 1f)
-    var reproductionStrategy: ReproductionStrategy = weightedReproduction(mutationEntries, .4f, .1f)
+    var reproductionStrategy: ReproductionStrategy = weightedReproduction(mutationEntries, .4f, .6f)
     var evaluationFunction: PopulationEvaluator = { error("need to provide a evaluator function") }
 }
 
