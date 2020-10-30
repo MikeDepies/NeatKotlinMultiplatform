@@ -21,16 +21,27 @@ export function wsListen<T extends {} = any>(): Messager<T> {
   // let derivedMap = new Map<string, Readable<any>>()
 
   return {
-    read(topic: string) {
-      const derivied = derived(message, ($message : any, set : any) => {
+    read<RouteKey extends Extract<keyof T, string>>(topic: RouteKey) {
+      const derivied = derived(message, ($message: string | undefined, set: (x: T[RouteKey]) => void) => {
         if ($message) {
-          const data: SimpleMessage<any> = JSON.parse($message)
+          const data: SimpleMessage<T[RouteKey]> = JSON.parse($message)
           if (data.topic === topic) {
-            set($message)
+            set(data.data)
           }
         }
       })
-      return <any>derivied
+      return derivied
+    },
+    readWithDefault<RouteKey extends Extract<keyof T, string>>(topic: RouteKey, value: T[RouteKey]) {
+      const derivied = derived(message, ($message: string | undefined, set: (x: T[RouteKey]) => void) => {
+        if ($message) {
+          const data: SimpleMessage<T[RouteKey]> = JSON.parse($message)
+          if (data.topic === topic) {
+            set(data.data)
+          }
+        }
+      }, value)
+      return derivied
     },
     write<M>(topic: string, data: M) {
       send({
@@ -54,6 +65,7 @@ export declare function wsTest<EventMap extends {} = any>(): WebsocketRouteMap<E
 
 type Messager<RouteMap> = {
   read: <RouteKey extends Extract<keyof RouteMap, string>> (topic: RouteKey) => Readable<RouteMap[RouteKey] | undefined>
+  readWithDefault: <RouteKey extends Extract<keyof RouteMap, string>> (topic: RouteKey, value: any) => Readable<RouteMap[RouteKey]>
   write: <M> (topic: string, data: M) => void
 }
 
