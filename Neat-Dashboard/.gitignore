@@ -1,6 +1,4 @@
-._*
-.DS_Store
-/.history/
-/node_modules/
-__sapper__/
-/src/node_modules/@sapper/
+.build
+build
+web_modules
+node_modules

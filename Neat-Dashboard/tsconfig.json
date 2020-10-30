@@ -1,34 +1,25 @@
 {
-    "compilerOptions": {
-        "lib": [
-            "DOM",
-            "ES2017",
-            "WebWorker"
-        ],
-        "target": "es2017",
-        "allowSyntheticDefaultImports": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "importsNotUsedAsValues": "error",
-        "isolatedModules": true,
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "strict": true,
-        "types": [
-            "svelte",
-            "@sapper"
-        ],
-        "typeRoots": [
-            "types"
-        ],
+  "include": ["src", "types"],
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "baseUrl": "./",
+    /* paths - If you configure Snowpack import aliases, add them here. */
+    "paths": {
+      "@components/*" : ["src/components/*"],
+      "@app/*" : ["src/*"]
     },
-    "include": [
-        "src/**/*",
-        "src/node_modules/**/*"
-    ],
-    "exclude": [
-        "node_modules/*",
-        "__sapper__/*",
-        "static/*"
-    ],
+    /* noEmit - Snowpack builds (emits) files, not tsc. */
+    "noEmit": true,
+    /* Additional Options */
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "useDefineForClassFields": true,
+    "allowSyntheticDefaultImports": true,
+    "importsNotUsedAsValues": "error"
+  }
 }
