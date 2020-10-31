@@ -3,7 +3,7 @@ package neat
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
-fun runNodeCountExample() {
+suspend fun runNodeCountExample() {
     val activationFunctions = baseActivationFunctions()
     val distanceFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
     val sharingFunction = shFunction(10f)

@@ -18,8 +18,9 @@ fun <T> identity(): (T) -> T = { it }
 class Neat(
     private val generationRules: GenerationRules
 ) {
-    val generationFinishedHandlers = mutableListOf<(SpeciesMap) -> Unit>()
-    fun process(
+    val generationFinishedHandlers = mutableListOf<suspend (SpeciesMap, Int) -> Unit>()
+    val modelScoresHandlers = mutableListOf<(List<ModelScore>, Int) -> Unit>()
+    suspend fun process(
         times: Int,
         population: List<NeatMutator>,
         speciesScoreKeeper: SpeciesScoreKeeper,
@@ -34,14 +35,13 @@ class Neat(
             val modelScoreList =
                 populationEvaluator(currentPopulation).toModelScores(adjustedFitness)
             sortModelsByAdjustedFitness(speciationController, modelScoreList)
+            modelScoresHandlers.forEach { it(modelScoreList, generation) }
             speciesScoreKeeper.updateScores(modelScoreList.map { speciationController.species(it.neatMutator) to it })
             val newPopulation = reproductionStrategy(simpleNeatExperiment, speciationController, modelScoreList)
             val speciesMap = speciationController.speciate(newPopulation, speciesLineage, generation)
             println("speciesMapSize: ${speciesMap.values.flatten().size} newPopulationSize: ${newPopulation.size} controllerSize: ${speciationController.population().size}")
-//            newGenerationHandler(speciesMap)
-            generationFinishedHandlers.forEach { it(speciesMap) }
+            generationFinishedHandlers.forEach { it(speciesMap, generation) }
             currentPopulation = newPopulation
-
         }
     }
 

@@ -62,7 +62,7 @@ fun Application.main() {
         post("/configuration") {
             val xorExperimentParameters = XorExperimentParameters(
                 generations = 10,
-                populationSize = 100,
+                populationSize = 10,
                 sharingThreshold = 3f,
                 mateChance = .4f,
                 survivalThreshold = .6f,
@@ -134,8 +134,7 @@ class SessionWebSocketsManager() {
                 try {
                     println("sent $it")
                     it.send(Json.encodeToString(SimpleMessage.serializer(), message))
-                }
-                catch(e : Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
@@ -195,7 +194,7 @@ fun Application.taskExecutor(
         fun input(inputSize: Int, useBoolean: Boolean) = inputSize + if (useBoolean) 1 else 0
         for (experiment in channel) {
             println("starting new experiment")
-            sessionWebsocketsManager.sendMessage(experiment, "start", "starting")
+            sessionWebsocketsManager.sendMessage(experiment, "start", experiment)
             val (generations, populationSize, sharingThreshold, mateChance,
                 survivalThreshold, activationFunctionDefinitions, mutationDefinitions,
                 randomSeed, useBias) = experimentFactory.getDefinitionForSession(experiment)
@@ -223,11 +222,29 @@ fun Application.taskExecutor(
                 Activation.sigmoidal
             )
             sessionWebsocketsManager.sendMessage(experiment, "initialPopulation", population.map { it.toOrganismDNA() })
-            println("finished")
-//            neat.process(generations, population, speciesScoreKeeper, speciesLineage, simpleNeatExperiment)
+            neat.generationFinishedHandlers.add { map: SpeciesMap, i: Int ->
+                val speciatedOrganisms = map.toSpeciatedOrgansims()
+                val data = NewGeneration(i, speciatedOrganisms)
+                sessionWebsocketsManager.sendMessage(experiment, "newGeneration", data)
+            }
+            neat.process(generations, population, speciesScoreKeeper, speciesLineage, simpleNeatExperiment)
         }
     }
 }
+
+@Serializable
+data class NewGeneration(val generation: Int, val organisms: List<SpeciatedOrganism>)
+
+fun SpeciesMap.toSpeciatedOrgansims(): List<SpeciatedOrganism> {
+    return flatMap { (species, neatMutators) ->
+        neatMutators.map {
+            SpeciatedOrganism(species.id, it.toOrganismDNA())
+        }
+    }
+}
+
+@Serializable
+data class SpeciatedOrganism(val speciesId: Int, val dna: OrganismDNA)
 
 //data class OrganismFitnessScore
 @Serializable

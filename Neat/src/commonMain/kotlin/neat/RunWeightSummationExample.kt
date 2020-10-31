@@ -3,7 +3,7 @@ package neat
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
-fun runWeightSummationExample() {
+suspend fun runWeightSummationExample() {
     val activationFunctions = listOf(SigmoidalTransferFunction, Identity)
     val dataFunction: DistanceFunction = { a, b -> compatibilityDistance(a, b, 1f, 1f, .4f) }
     val sharingFunction = shFunction(1f)
